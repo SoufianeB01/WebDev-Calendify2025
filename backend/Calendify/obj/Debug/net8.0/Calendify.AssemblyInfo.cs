@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Calendify")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dbfab3fcf486df89f6e2537e6f12902d026db6b1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+abb428b80b2b16a58194edf7f65cd3f4e693a49d")]
 [assembly: System.Reflection.AssemblyProductAttribute("Calendify")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Calendify")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

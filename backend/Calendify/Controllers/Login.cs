@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Calendify.Models;
 
 namespace Calendify.Controller
 {
@@ -32,11 +33,5 @@ namespace Calendify.Controller
         {
             return Ok(new { isLoggedIn = false });
         }
-    }
-
-    public class LoginRequest
-    {
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
     }
 }
