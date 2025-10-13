@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "c8RSEKT8NbQBGjK1Xp7PG2YODdShHaWA1Hi8QNiRm7o=",
+  "Source": "CalendifyWebAppAPI",
+  "BasePath": "_content/CalendifyWebAppAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
