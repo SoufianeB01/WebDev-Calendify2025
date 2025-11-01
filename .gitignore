@@ -1,0 +1,32 @@
+# C# Build
+**/bin/
+**/obj/
+/backend/CalendifyWebAppAPI/bin/
+/backend/CalendifyWebAppAPI/obj/
+
+# Node / frontend
+/node_modules/
+/calendify-app/node_modules/
+dist
+dist-ssr
+build
+/.pnp
+.pnp.js
+.nitro
+.tanstack
+
+# Environment and misc
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.local
+count.txt
+
+# OS / logs / coverage
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/coverage
