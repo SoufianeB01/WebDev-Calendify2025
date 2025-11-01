@@ -20,8 +20,16 @@ namespace CalendifyWebAppAPI.Controllers
         public IActionResult Authenticate([FromBody] User loginUser)
         {
             var user = _context.Users.FirstOrDefault(u => u.Username == loginUser.Username);
-            if (user == null) return NotFound(new { message = "User not found" });
-            if (user.Password != loginUser.Password) return Unauthorized(new { message = "Incorrect password" });
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            if (user.Password != loginUser.Password)
+            {
+                return BadRequest(new { message = "Incorrect password" });
+            }
+
             return Ok(new { message = "Login successful", username = user.Username });
         }
 
@@ -29,11 +37,13 @@ namespace CalendifyWebAppAPI.Controllers
         public IActionResult Create([FromBody] User newUser)
         {
             if (_context.Users.Any(u => u.Username == newUser.Username))
-                return Conflict(new { message = "Username already exists" });
+            {
+                return BadRequest(new { message = "Username already exists" });
+            }
 
             _context.Users.Add(newUser);
             _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = newUser.Id }, newUser);
+            return Ok(newUser);
         }
 
         [HttpGet] //get
@@ -47,7 +57,11 @@ namespace CalendifyWebAppAPI.Controllers
         public IActionResult GetById(int id)
         {
             var user = _context.Users.Find(id);
-            if (user == null) return NotFound();
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
             return Ok(user);
         }
 
@@ -55,22 +69,29 @@ namespace CalendifyWebAppAPI.Controllers
         public IActionResult Update(int id, [FromBody] User updatedUser)
         {
             var user = _context.Users.Find(id);
-            if (user == null) return NotFound();
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
 
             user.Username = updatedUser.Username;
             user.Password = updatedUser.Password;
             _context.SaveChanges();
-            return NoContent();
+            return Ok(user);
         }
 
         [HttpDelete("{id}")] //delete
         public IActionResult Delete(int id)
         {
             var user = _context.Users.Find(id);
-            if (user == null) return NotFound();
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
             _context.Users.Remove(user);
             _context.SaveChanges();
-            return NoContent();
+            return Ok(new { message = "User deleted" });
         }
     }
 }

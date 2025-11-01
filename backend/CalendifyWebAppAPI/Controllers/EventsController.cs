@@ -21,7 +21,7 @@ namespace CalendifyWebAppAPI.Controllers
         {
             _context.Events.Add(event_);
             _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = event_.EventId }, event_);
+            return Ok(event_);
         }
 
         [HttpGet] //get
@@ -35,7 +35,11 @@ namespace CalendifyWebAppAPI.Controllers
         public IActionResult GetById(int id)
         {
             var event_ = _context.Events.Find(id);
-            if (event_ == null) return NotFound();
+            if (event_ == null)
+            {
+                return NotFound(new { message = "Event not found" });
+            }
+
             return Ok(event_);
         }
 
@@ -43,24 +47,31 @@ namespace CalendifyWebAppAPI.Controllers
         public IActionResult Update(int id, [FromBody] Event updated)
         {
             var event_ = _context.Events.Find(id);
-            if (event_ == null) return NotFound();
+            if (event_ == null)
+            {
+                return NotFound(new { message = "Event not found" });
+            }
 
             event_.Title = updated.Title;
             event_.Description = updated.Description;
             event_.EventDate = updated.EventDate;
             event_.CreatedBy = updated.CreatedBy;
             _context.SaveChanges();
-            return NoContent();
+            return Ok(event_);
         }
 
         [HttpDelete("{id}")] //delete
         public IActionResult Delete(int id)
         {
             var event_ = _context.Events.Find(id);
-            if (event_ == null) return NotFound();
+            if (event_ == null)
+            {
+                return NotFound(new { message = "Event not found" });
+            }
+
             _context.Events.Remove(event_);
             _context.SaveChanges();
-            return NoContent();
+            return Ok(new { message = "Event deleted" });
         }
     }
 }
