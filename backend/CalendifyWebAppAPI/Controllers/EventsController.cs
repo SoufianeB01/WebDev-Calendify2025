@@ -19,6 +19,7 @@ namespace CalendifyWebAppAPI.Controllers
         [HttpPost] //post
         public IActionResult Create([FromBody] Event event_)
         {
+            event_.EventDate = DateTime.SpecifyKind(event_.EventDate, DateTimeKind.Utc);
             _context.Events.Add(event_);
             _context.SaveChanges();
             return Ok(event_);
