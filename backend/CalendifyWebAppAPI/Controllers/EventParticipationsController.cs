@@ -16,6 +16,13 @@ namespace CalendifyWebAppAPI.Controllers
             _context = context;
         }
 
+        [HttpGet] //get
+        public IActionResult GetAll()
+        {
+            var participations = _context.EventParticipations.ToList();
+            return Ok(participations);
+        }
+
         [HttpPost] //post
         public IActionResult JoinEvent([FromBody] EventParticipation participation)
         {
