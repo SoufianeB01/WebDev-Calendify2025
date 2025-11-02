@@ -16,6 +16,13 @@ namespace CalendifyWebAppAPI.Controllers
             _context = context;
         }
 
+        [HttpGet] //get
+        public IActionResult GetAll()
+        {
+            var memberships = _context.GroupMemberships.ToList();
+            return Ok(memberships);
+        }
+
         [HttpPost] //post
         public IActionResult AddMember([FromBody] GroupMembership membership)
         {
