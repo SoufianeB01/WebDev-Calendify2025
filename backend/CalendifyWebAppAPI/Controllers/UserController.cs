@@ -30,7 +30,7 @@ namespace CalendifyWebAppAPI.Controllers
                 return BadRequest(new { message = "Incorrect password" });
             }
 
-            return Ok(new { message = "Login successful", email = employee_.Email });
+            return Ok(new { message = "Login successful", userId = employee_.UserId, email = employee_.Email, role = employee_.Role });
         }
 
         [HttpPost] //post
@@ -74,6 +74,13 @@ namespace CalendifyWebAppAPI.Controllers
                 return NotFound(new { message = "Employee not found" });
             }
 
+            // Check if email already exists for another user
+            if (updatedEmployee.Email != employee_.Email && 
+                _context.Employees.Any(e => e.Email == updatedEmployee.Email && e.UserId != id))
+            {
+                return BadRequest(new { message = "Email already exists" });
+            }
+
             employee_.Name = updatedEmployee.Name;
             employee_.Email = updatedEmployee.Email;
             employee_.Role = updatedEmployee.Role;
@@ -96,6 +103,16 @@ namespace CalendifyWebAppAPI.Controllers
             return Ok(new { message = "Employee deleted" });
         }
 
-        //To do: Logout method
+        [HttpGet("email/{email}")] //get
+        public IActionResult GetByEmail(string email)
+        {
+            var employee_ = _context.Employees.FirstOrDefault(e => e.Email == email);
+            if (employee_ == null)
+            {
+                return NotFound(new { message = "Employee not found" });
+            }
+
+            return Ok(employee_);
+        }
     }
 }
