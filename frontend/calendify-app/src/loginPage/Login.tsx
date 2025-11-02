@@ -17,7 +17,11 @@ export class Login extends React.Component<{}, LoginState> {
     super(props)
     this.state ={
       username: "",
-      password: ""    
+      password: "",
+      loginUser: (user: User) => {
+        console.log("Login attempt:", user);
+        // TODO: Implement login logic
+      }
     };
   }
 
