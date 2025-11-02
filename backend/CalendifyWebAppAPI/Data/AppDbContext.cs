@@ -21,6 +21,7 @@ namespace CalendifyWebAppAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
+
             modelBuilder.Entity<EventParticipation>(eventParticipation =>
             {
                 eventParticipation.HasKey(x => new { x.UserId, x.EventId });

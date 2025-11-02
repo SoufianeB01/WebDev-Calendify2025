@@ -1,0 +1,25 @@
+### Create Test Admin User
+POST http://localhost:5143/api/user
+Content-Type: application/json
+
+{
+  "name": "Admin01",
+  "email": "admin@test.com",
+  "role": "Admin",
+  "password": "admin123"
+}
+
+### Create Test Regular User
+POST http://localhost:5143/api/user
+Content-Type: application/json
+
+{
+  "name": "User01",
+  "email": "user@test.com",
+  "role": "User",
+  "password": "user123"
+}
+
+### Check All Users (to see what exists)
+GET http://localhost:5143/api/user
+
