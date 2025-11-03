@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CalendifyWebAppAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+03099d035f25db66590ceb260fa65070a26a3ecc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d9d8e5d3ad372e76302368e70240588129ef5214")]
 [assembly: System.Reflection.AssemblyProductAttribute("CalendifyWebAppAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CalendifyWebAppAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
