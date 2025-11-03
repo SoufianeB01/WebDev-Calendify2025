@@ -17,7 +17,7 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpPost("auth")] //post
-        public IActionResult Login([FromBody] Employee login)
+        public IActionResult Login([FromBody] LoginRequest login)
         {
             var employee_ = _context.Employees.FirstOrDefault(e => e.Email == login.Email);
             if (employee_ == null)
