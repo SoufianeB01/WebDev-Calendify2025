@@ -26,6 +26,12 @@ function RouteComponent() {
             }}
             children="Logout"
         />
+          <Button
+            onClick={() => {
+                navigate({ to: '/test' });
+            }}
+            children="Test"
+        />
         <Outlet />
     </>);
 }
