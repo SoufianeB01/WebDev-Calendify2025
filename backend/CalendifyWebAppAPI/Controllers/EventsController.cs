@@ -7,17 +7,12 @@ namespace CalendifyWebAppAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EventsController : ControllerBase
+    public class EventsController : GenericCrudController<Event, int>
     {
-        private readonly AppDbContext _context;
-
-        public EventsController(AppDbContext context)
-        {
-            _context = context;
-        }
+        public EventsController(AppDbContext context) : base(context) { }
 
         [HttpPost] //post
-        public IActionResult Create([FromBody] Event event_)
+        public override IActionResult Create([FromBody] Event event_)
         {
             // Check if user exists
             var user = _context.Employees.Find(event_.CreatedBy);
@@ -32,25 +27,6 @@ namespace CalendifyWebAppAPI.Controllers
             return Ok(event_);
         }
 
-        [HttpGet] //get
-        public IActionResult GetAll()
-        {
-            var events = _context.Events.ToList();
-            return Ok(events);
-        }
-
-        [HttpGet("{id}")] //get
-        public IActionResult GetById(int id)
-        {
-            var event_ = _context.Events.Find(id);
-            if (event_ == null)
-            {
-                return NotFound(new { message = "Event not found" });
-            }
-
-            return Ok(event_);
-        }
-
         [HttpGet("user/{userId}")] //get
         public IActionResult GetByUserId(int userId)
         {
@@ -62,7 +38,7 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpPut("{id}")] //put
-        public IActionResult Update(int id, [FromBody] Event updated)
+        public override IActionResult Update(int id, [FromBody] Event updated)
         {
             var event_ = _context.Events.Find(id);
             if (event_ == null)
@@ -85,18 +61,5 @@ namespace CalendifyWebAppAPI.Controllers
             return Ok(event_);
         }
 
-        [HttpDelete("{id}")] //delete
-        public IActionResult Delete(int id)
-        {
-            var event_ = _context.Events.Find(id);
-            if (event_ == null)
-            {
-                return NotFound(new { message = "Event not found" });
-            }
-
-            _context.Events.Remove(event_);
-            _context.SaveChanges();
-            return Ok(new { message = "Event deleted" });
-        }
     }
 }
