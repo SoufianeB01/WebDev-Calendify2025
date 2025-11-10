@@ -61,7 +61,6 @@ namespace CalendifyWebAppAPI.Controllers
 			foreach (var property in entityType.GetProperties())
 			{
 				if (keyNames.Contains(property.Name)) continue;
-				// Skip navigations (should nt be in GetProperties, but guard)
 				if (property.PropertyInfo == null || !property.PropertyInfo.CanWrite) continue;
 
 				var newValue = property.PropertyInfo.GetValue(updated);
