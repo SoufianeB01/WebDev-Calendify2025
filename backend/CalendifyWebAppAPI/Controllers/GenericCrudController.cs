@@ -51,8 +51,6 @@ namespace CalendifyWebAppAPI.Controllers
 			{
 				return NotFound();
 			}
-
-			// Copy non-key scalar properties from 'updated' into 'existing'
 			var entityType = _context.Model.FindEntityType(typeof(TEntity));
 			if (entityType == null)
 			{
@@ -62,9 +60,8 @@ namespace CalendifyWebAppAPI.Controllers
 			var keyNames = entityType.FindPrimaryKey()?.Properties.Select(p => p.Name).ToHashSet() ?? new HashSet<string>();
 			foreach (var property in entityType.GetProperties())
 			{
-				// Skip key properties
 				if (keyNames.Contains(property.Name)) continue;
-				// Skip navigations (should not be in GetProperties, but guard)
+				// Skip navigations (should nt be in GetProperties, but guard)
 				if (property.PropertyInfo == null || !property.PropertyInfo.CanWrite) continue;
 
 				var newValue = property.PropertyInfo.GetValue(updated);
