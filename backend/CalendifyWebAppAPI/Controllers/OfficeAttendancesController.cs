@@ -7,17 +7,12 @@ namespace CalendifyWebAppAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class OfficeAttendancesController : ControllerBase
+    public class OfficeAttendancesController : GenericCrudController<OfficeAttendance, int>
     {
-        private readonly AppDbContext _context;
-
-        public OfficeAttendancesController(AppDbContext context)
-        {
-            _context = context;
-        }
+        public OfficeAttendancesController(AppDbContext context) : base(context) { }
 
         [HttpPost] //post
-        public IActionResult RecordAttendance([FromBody] OfficeAttendance attendance)
+        public override IActionResult Create([FromBody] OfficeAttendance attendance)
         {
             // Check if user exists
             var user = _context.Employees.Find(attendance.UserId);
@@ -30,13 +25,6 @@ namespace CalendifyWebAppAPI.Controllers
             _context.OfficeAttendances.Add(attendance);
             _context.SaveChanges();
             return Ok(attendance);
-        }
-
-        [HttpGet] //get
-        public IActionResult GetAll()
-        {
-            var attendances = _context.OfficeAttendances.ToList();
-            return Ok(attendances);
         }
 
         [HttpGet("user/{userId}")] //get
@@ -58,20 +46,8 @@ namespace CalendifyWebAppAPI.Controllers
             return Ok(attendances);
         }
 
-        [HttpGet("{id}")] //get
-        public IActionResult GetById(int id)
-        {
-            var attendance = _context.OfficeAttendances.Find(id);
-            if (attendance == null)
-            {
-                return NotFound(new { message = "Attendance record not found" });
-            }
-
-            return Ok(attendance);
-        }
-
         [HttpPut("{id}")] //put
-        public IActionResult Update(int id, [FromBody] OfficeAttendance updated)
+        public override IActionResult Update(int id, [FromBody] OfficeAttendance updated)
         {
             var attendance = _context.OfficeAttendances.Find(id);
             if (attendance == null)
@@ -86,19 +62,6 @@ namespace CalendifyWebAppAPI.Controllers
             return Ok(attendance);
         }
 
-        [HttpDelete("{id}")] //delete
-        public IActionResult Delete(int id)
-        {
-            var attendance = _context.OfficeAttendances.Find(id);
-            if (attendance == null)
-            {
-                return NotFound(new { message = "Attendance record not found" });
-            }
-
-            _context.OfficeAttendances.Remove(attendance);
-            _context.SaveChanges();
-            return Ok(new { message = "Attendance record deleted" });
-        }
     }
 }
 

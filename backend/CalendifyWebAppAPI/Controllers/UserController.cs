@@ -7,14 +7,9 @@ namespace CalendifyWebAppAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class UserController : GenericCrudController<Employee, int>
     {
-        private readonly AppDbContext _context;
-
-        public UserController(AppDbContext context)
-        {
-            _context = context;
-        }
+        public UserController(AppDbContext context) : base(context) { }
 
         [HttpPost("auth")] //post
         public IActionResult Login([FromBody] LoginRequest login)
@@ -34,7 +29,7 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpPost] //post
-        public IActionResult Register([FromBody] Employee newEmployee)
+        public override IActionResult Create([FromBody] Employee newEmployee)
         {
             if (_context.Employees.Any(e => e.Email == newEmployee.Email))
             {
@@ -43,30 +38,11 @@ namespace CalendifyWebAppAPI.Controllers
 
             _context.Employees.Add(newEmployee);
             _context.SaveChanges();
-            return Ok(newEmployee);
-        }
-
-        [HttpGet] //get
-        public IActionResult GetAll()
-        {
-            var employees = _context.Employees.ToList();
-            return Ok(employees);
-        }
-
-        [HttpGet("{id}")] //get
-        public IActionResult GetById(int id)
-        {
-            var employee_ = _context.Employees.Find(id);
-            if (employee_ == null)
-            {
-                return NotFound(new { message = "Employee not found" });
-            }
-
-            return Ok(employee_);
+            return Ok(newEmployee.Email);
         }
 
         [HttpPut("{id}")] //put
-        public IActionResult Update(int id, [FromBody] Employee updatedEmployee)
+        public override IActionResult Update(int id, [FromBody] Employee updatedEmployee)
         {
             var employee_ = _context.Employees.Find(id);
             if (employee_ == null)
@@ -87,20 +63,6 @@ namespace CalendifyWebAppAPI.Controllers
             employee_.Password = updatedEmployee.Password;
             _context.SaveChanges();
             return Ok(employee_);
-        }
-
-        [HttpDelete("{id}")] //delete
-        public IActionResult Delete(int id)
-        {
-            var employee_ = _context.Employees.Find(id);
-            if (employee_ == null)
-            {
-                return NotFound(new { message = "Employee not found" });
-            }
-
-            _context.Employees.Remove(employee_);
-            _context.SaveChanges();
-            return Ok(new { message = "Employee deleted" });
         }
 
         [HttpGet("email/{email}")] //get
