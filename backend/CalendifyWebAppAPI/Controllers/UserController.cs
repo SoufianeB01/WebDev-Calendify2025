@@ -43,7 +43,7 @@ namespace CalendifyWebAppAPI.Controllers
 
             _context.Employees.Add(newEmployee);
             _context.SaveChanges();
-            return Ok(newEmployee);
+            return Ok(newEmployee.Email);
         }
 
         [HttpGet] //get

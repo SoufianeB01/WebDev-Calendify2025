@@ -19,7 +19,7 @@ code {
 }
 
 :root {
-  --background: oklch(1 0 0);
+  --background: #f0fff0;
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
@@ -131,6 +131,9 @@ code {
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  html {
+    @apply bg-background; /* ensure page root uses the token */
   }
   body {
     @apply bg-background text-foreground;
