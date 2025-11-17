@@ -183,7 +183,7 @@ code {
 
   /* Light Purple */
   --ring: oklch(0.82 0.08 285);
-
+  
   --radius: 0.625rem;
 
   /* Medium Purple Blue */
@@ -300,7 +300,9 @@ code {
   * {
     @apply border-border outline-ring/50;
   }
-
+  html {
+    @apply bg-background; /* ensure page root uses the token */
+  }
   body {
     @apply bg-background text-foreground;
   }

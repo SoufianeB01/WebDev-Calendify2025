@@ -13,8 +13,9 @@ import { Route as UnauthRouteRouteImport } from './routes/_unauth/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
-import { Route as UnauthLoginRouteRouteImport } from './routes/_unauth/login/route'
-import { Route as AuthDashboardRouteRouteImport } from './routes/_auth/dashboard/route'
+import { Route as UnauthLoginIndexRouteImport } from './routes/_unauth/login/index'
+import { Route as AuthTestIndexRouteImport } from './routes/_auth/test/index'
+import { Route as AuthDashboardIndexRouteImport } from './routes/_auth/dashboard/index'
 import { Route as DemoFormAddressRouteImport } from './routes/demo.form.address'
 
 const UnauthRouteRoute = UnauthRouteRouteImport.update({
@@ -35,14 +36,19 @@ const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   path: '/demo/tanstack-query',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UnauthLoginRouteRoute = UnauthLoginRouteRouteImport.update({
-  id: '/login',
-  path: '/login',
+const UnauthLoginIndexRoute = UnauthLoginIndexRouteImport.update({
+  id: '/login/',
+  path: '/login/',
   getParentRoute: () => UnauthRouteRoute,
 } as any)
-const AuthDashboardRouteRoute = AuthDashboardRouteRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AuthTestIndexRoute = AuthTestIndexRouteImport.update({
+  id: '/test/',
+  path: '/test/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthDashboardIndexRoute = AuthDashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
   getParentRoute: () => AuthRouteRoute,
 } as any)
 const DemoFormAddressRoute = DemoFormAddressRouteImport.update({
@@ -53,52 +59,58 @@ const DemoFormAddressRoute = DemoFormAddressRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof AuthDashboardRouteRoute
-  '/login': typeof UnauthLoginRouteRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/form/address': typeof DemoFormAddressRoute
+  '/dashboard': typeof AuthDashboardIndexRoute
+  '/test': typeof AuthTestIndexRoute
+  '/login': typeof UnauthLoginIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof AuthDashboardRouteRoute
-  '/login': typeof UnauthLoginRouteRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/form/address': typeof DemoFormAddressRoute
+  '/dashboard': typeof AuthDashboardIndexRoute
+  '/test': typeof AuthTestIndexRoute
+  '/login': typeof UnauthLoginIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_unauth': typeof UnauthRouteRouteWithChildren
-  '/_auth/dashboard': typeof AuthDashboardRouteRoute
-  '/_unauth/login': typeof UnauthLoginRouteRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/form/address': typeof DemoFormAddressRoute
+  '/_auth/dashboard/': typeof AuthDashboardIndexRoute
+  '/_auth/test/': typeof AuthTestIndexRoute
+  '/_unauth/login/': typeof UnauthLoginIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/dashboard'
-    | '/login'
     | '/demo/tanstack-query'
     | '/demo/form/address'
+    | '/dashboard'
+    | '/test'
+    | '/login'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/dashboard'
-    | '/login'
     | '/demo/tanstack-query'
     | '/demo/form/address'
+    | '/dashboard'
+    | '/test'
+    | '/login'
   id:
     | '__root__'
     | '/'
     | '/_auth'
     | '/_unauth'
-    | '/_auth/dashboard'
-    | '/_unauth/login'
     | '/demo/tanstack-query'
     | '/demo/form/address'
+    | '/_auth/dashboard/'
+    | '/_auth/test/'
+    | '/_unauth/login/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -139,18 +151,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoTanstackQueryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_unauth/login': {
-      id: '/_unauth/login'
+    '/_unauth/login/': {
+      id: '/_unauth/login/'
       path: '/login'
       fullPath: '/login'
-      preLoaderRoute: typeof UnauthLoginRouteRouteImport
+      preLoaderRoute: typeof UnauthLoginIndexRouteImport
       parentRoute: typeof UnauthRouteRoute
     }
-    '/_auth/dashboard': {
-      id: '/_auth/dashboard'
+    '/_auth/test/': {
+      id: '/_auth/test/'
+      path: '/test'
+      fullPath: '/test'
+      preLoaderRoute: typeof AuthTestIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/dashboard/': {
+      id: '/_auth/dashboard/'
       path: '/dashboard'
       fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthDashboardRouteRouteImport
+      preLoaderRoute: typeof AuthDashboardIndexRouteImport
       parentRoute: typeof AuthRouteRoute
     }
     '/demo/form/address': {
@@ -164,11 +183,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthRouteRouteChildren {
-  AuthDashboardRouteRoute: typeof AuthDashboardRouteRoute
+  AuthDashboardIndexRoute: typeof AuthDashboardIndexRoute
+  AuthTestIndexRoute: typeof AuthTestIndexRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
-  AuthDashboardRouteRoute: AuthDashboardRouteRoute,
+  AuthDashboardIndexRoute: AuthDashboardIndexRoute,
+  AuthTestIndexRoute: AuthTestIndexRoute,
 }
 
 const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
@@ -176,11 +197,11 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 )
 
 interface UnauthRouteRouteChildren {
-  UnauthLoginRouteRoute: typeof UnauthLoginRouteRoute
+  UnauthLoginIndexRoute: typeof UnauthLoginIndexRoute
 }
 
 const UnauthRouteRouteChildren: UnauthRouteRouteChildren = {
-  UnauthLoginRouteRoute: UnauthLoginRouteRoute,
+  UnauthLoginIndexRoute: UnauthLoginIndexRoute,
 }
 
 const UnauthRouteRouteWithChildren = UnauthRouteRoute._addFileChildren(
