@@ -28,9 +28,15 @@ function RouteComponent() {
         />
           <Button
             onClick={() => {
-                navigate({ to: '/test' });
+                navigate({ to: 'dashboard/room' });
             }}
-            children="Test"
+            children="Room"
+        />
+          <Button
+            onClick={() => {
+                navigate({ to: 'dashboard/events' });
+            }}
+            children="events"
         />
         <Outlet />
     </>);
