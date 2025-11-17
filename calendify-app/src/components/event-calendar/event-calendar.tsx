@@ -11,7 +11,6 @@ import {
     ChevronRightIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
 import { DropdownMenuShortcut } from '../ui/dropdown-menu';
@@ -135,11 +134,14 @@ export function EventCalendar({
         onEventUpdate?.(updatedEvent);
     };
 
-    const { t } = useTranslation('dashboard');
     // Use currentDate for dynamic header values
     const oneJanuary = new Date(currentDate.getFullYear(), 0, 1);
     const currentWeek = Math.ceil((((currentDate.getTime() - oneJanuary.getTime()) / 86400000) + oneJanuary.getDay() + 1) / 7);
     const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+
+    // Calculate next month and year for date range display
+    const nextMonth = (currentDate.getMonth() + 1) % 12;
+    const nextMonthYear = currentDate.getMonth() === 11 ? currentDate.getFullYear() + 1 : currentDate.getFullYear();
 
     return (
         <div
@@ -165,7 +167,7 @@ export function EventCalendar({
                                 className="w-16 h-14 rotate-0 opacity-100 rounded-md border flex text-center flex-col bg-[#FFFFFF]"
                             >
                                 <div className="bg-[#FAFAFA] font-semibold text-quaternary">
-                                    {t(`dashboard.calender.months.${currentDate.getMonth() + 1}`)}
+                                    {["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"][currentDate.getMonth()]}
                                 </div>
                                 <div className="text-brand-secondary text-lg font-bold">
                                     {currentDate.getDate()}
@@ -174,20 +176,20 @@ export function EventCalendar({
                             <div>
                                 <h2 className="flex flex-row gap-2">
                                     <div className="text-xl font-semibold">
-                                        {t(`dashboard.calender.monthsFullName.${currentDate.getMonth() + 1}`)}
+                                        {["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"][currentDate.getMonth()]}
                                         {' '}
                                         {currentDate.getFullYear()}
                                     </div>
                                     <div className="text-xs border-[#D5D7DA]">
                                         <span className="inline-block px-2 py-0.5 rounded-full border border-[#D5D7DA] text-xs font-medium align-middle mt-1">
-                                            {t('dashboard.calender.week')}
-                                            {' '}
-                                            {currentWeek}
+                                            Week {currentWeek}
                                         </span>
                                     </div>
                                 </h2>
                                 <p className="mt-1 text-text-primary/70 text-base">
-                                    {`${t(`dashboard.calender.months.${currentDate.getMonth() + 1}`)} 1, ${currentDate.getFullYear()} - ${t(`dashboard.calender.months.${currentDate.getMonth() + 1}`)} ${daysInMonth}, ${currentDate.getFullYear()} `}
+                                    {["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"][currentDate.getMonth()]}
+                                    {' '}1, {currentDate.getFullYear()} - {["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"][nextMonth]}
+                                    {' '}{daysInMonth}, {nextMonthYear}
                                 </p>
                             </div>
                         </div>
@@ -207,16 +209,16 @@ export function EventCalendar({
                                     <Button variant="outline" className="gap-1.5 max-[479px]:h-8">
                                         <span>
                                             <span className="min-[480px]:hidden" aria-hidden="true">
-                                                {view === 'day' && (<>{t('dashboard.planning.day')}</>)}
-                                                {view === 'week' && (<>{t('dashboard.planning.week')}</>)}
-                                                {view === 'month' && (<>{t('dashboard.planning.month')}</>)}
-                                                {view === 'agenda' && (<>{t('dashboard.planning.agenda')}</>)}
+                                                {view === 'day' && (<>Dag</>)}
+                                                {view === 'week' && (<>Week</>)}
+                                                {view === 'month' && (<>Maand</>)}
+                                                {view === 'agenda' && (<>Agenda</>)}
                                             </span>
                                             <span className="max-[479px]:sr-only">
-                                                {view === 'day' && (<>{t('dashboard.planning.day')}</>)}
-                                                {view === 'week' && (<>{t('dashboard.planning.week')}</>)}
-                                                {view === 'month' && (<>{t('dashboard.planning.month')}</>)}
-                                                {view === 'agenda' && (<>{t('dashboard.planning.agenda')}</>)}
+                                                {view === 'day' && (<>Dag</>)}
+                                                {view === 'week' && (<>Week</>)}
+                                                {view === 'month' && (<>Maand</>)}
+                                                {view === 'agenda' && (<>Agenda</>)}
                                             </span>
                                         </span>
                                         <ChevronDownIcon
@@ -228,12 +230,12 @@ export function EventCalendar({
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="min-w-32">
                                     <DropdownMenuItem onClick={() => setView('month')}>
-                                        {t('dashboard.planning.month')}
+                                        Maand
                                         {' '}
                                         <DropdownMenuShortcut>M</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => setView('week')}>
-                                        {t('dashboard.planning.week')}
+                                        Week
                                         {' '}
                                         <DropdownMenuShortcut>W</DropdownMenuShortcut>
                                     </DropdownMenuItem>
