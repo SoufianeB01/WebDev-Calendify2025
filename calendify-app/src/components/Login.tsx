@@ -35,38 +35,40 @@ export default class Login extends React.Component<LoginProps, LoginState> {
     this.setState({ password: e.target.value });
   };
 
-  handleSubmit = async () => {
+  handleSubmit = () => {
     const { email, password } = this.state;
     this.setState({ loading: true, error: null });
-    try {
-      const url = `${API_BASE}/api/user/auth`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) {
-        let msg = 'Login failed';
-        try {
-          const data = await res.json();
-          msg = data.message || msg;
-        } catch {
-          // ignore parse error
+
+    fetch(`${API_BASE}/api/user/auth`, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+      .then(
+        (res) =>
+          res
+            .json()
+            .then((body) => ({ ok: res.ok, status: res.status, body }))
+            .catch(() => ({ ok: res.ok, status: res.status, body: null })),
+      )
+      .then(({ ok, status, body }) => {
+        if (!ok) {
+          const msg = body?.message || `Login failed (${status})`;
+          this.setState({ error: msg, loading: false });
+          return;
         }
-        this.setState({ error: msg, loading: false });
-        return;
-      }
-      const data = await res.json();
-      this.setState({ loggedIn: true, loading: false });
-      this.props.onSuccess?.({
-        userId: data.userId,
-        email: data.email,
-        role: data.role,
+        this.setState({ loggedIn: true, loading: false });
+        this.props.onSuccess?.({
+          userId: body.userId,
+          email: body.email,
+          role: body.role,
+        });
+      })
+      .catch((e) => {
+        console.error('Login request failed:', e);
+        this.setState({ error: 'Login request failed. Please try again.', loading: false });
       });
-    } catch (e: any) {
-      console.error('Login network/CORS error:', e);
-      this.setState({ error: 'Network/CORS error', loading: false });
-    }
   };
 
   render() {

@@ -8,7 +8,7 @@ Content-Type: application/json
 }
 
 
-### Login (wrong password)
+### Login
 POST http://localhost:5143/api/user/auth
 Content-Type: application/json
 
@@ -17,7 +17,7 @@ Content-Type: application/json
   "password": "wrong"
 }
 
-### Register (admin seed)
+### Register
 POST http://localhost:5143/api/user
 Content-Type: application/json
 
