@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { CalendarTable } from '@/components/calender-table';
+import Dashboard from '@/components/Dashboard';
 
 export const Route = createFileRoute(
   '/_auth/dashboard/',
@@ -10,7 +10,7 @@ export const Route = createFileRoute(
 function RouteComponent() {
   return (
     <div className="flex flex-col max-sm:flex-wrap gap-8 justify-start">
-      <CalendarTable.Header />
+      <Dashboard />
     </div>
   );
 }

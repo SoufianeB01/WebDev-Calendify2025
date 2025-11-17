@@ -1,10 +1,82 @@
-### Login
+### Login (user.one)
+POST http://localhost:5143/api/user/auth
+Content-Type: application/json
+
+{
+  "email": "user.one@company.com",
+  "password": "pass123"
+}
+
+
+### Login (wrong password)
 POST http://localhost:5143/api/user/auth
 Content-Type: application/json
 
 {
   "email": "admin@company.com",
+  "password": "wrong"
+}
+
+### Register (admin seed)
+POST http://localhost:5143/api/user
+Content-Type: application/json
+
+{
+  "name": "Admin",
+  "email": "admin@company.com",
+  "role": "Admin",
   "password": "1234"
+}
+
+### Get user by email
+GET http://localhost:5143/api/user/email/admin@company.com
+
+### Create normal user
+POST http://localhost:5143/api/user
+Content-Type: application/json
+
+{
+  "name": "User One",
+  "email": "user.one@company.com",
+  "role": "User",
+  "password": "pass123"
+}
+
+### Update user (id = 1)
+PUT http://localhost:5143/api/user/1
+Content-Type: application/json
+
+{
+  "name": "Admin Renamed",
+  "email": "admin@company.com",
+  "role": "Admin",
+  "password": "1234"
+}
+
+### Create event (UTC date)
+POST http://localhost:5143/api/events
+Content-Type: application/json
+
+{
+  "title": "Daily Standup",
+  "description": "Team sync",
+  "eventDate": "2025-11-18T09:00:00Z",
+  "createdBy": 1
+}
+
+### Get events
+GET http://localhost:5143/api/events
+
+### Get events by user
+GET http://localhost:5143/api/events/user/1
+
+### Attempt login non-existent user (should 404)
+POST http://localhost:5143/api/user/auth
+Content-Type: application/json
+
+{
+  "email": "ghost@company.com",
+  "password": "whatever"
 }
 
 ### Register
