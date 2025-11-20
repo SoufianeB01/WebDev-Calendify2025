@@ -1,5 +1,5 @@
-// import { useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import z from "zod";
 import type { FormEvent } from "react";
@@ -17,37 +17,54 @@ export const Route = createFileRoute("/_unauth/login/")({
 function RouteComponent() {
     const navigate = Route.useNavigate();
     const search = Route.useSearch();
-    // const router = useRouter();
-    // const queryClient = useQueryClient();
+    const router = useRouter();
+    const queryClient = useQueryClient();
+
+    const loginMutation = useMutation({
+        mutationFn: async (data: { email: string; password: string }) => {
+            const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
+            const response = await fetch(`${API_BASE}/api/user/auth`, {
+                method: 'POST',
+                mode: 'cors',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({
+                    email: data.email,
+                    password: data.password
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Request failed');
+            }
+
+            return response.json();
+        }
+    });
 
     const form = useAppForm({
         defaultValues: {
             email: "",
             password: "",
         },
-        onSubmit: (/* { value }*/) => {
-            localStorage.setItem('isAuthenticated', 'true');
-            // const respone = await authClient.signIn.email({
-            //     email: value.email,
-            //     password: value.password,
-            // });
-
-            // if (respone.error) {
-            //     toast.error("U kon niet worden ingelogd. Controleer de invoer en probeer het opnieuw.");
-            //     return;
-            // }
-
-            // await router.invalidate();
-            // await queryClient.invalidateQueries();
-
-            // Show success message
-            toast.success("U bent succesvol ingelogd.");
-
-            // redirect to the intended page or home
-            navigate({ to: search.redirectPath || '/' });
-        },
-        onSubmitInvalid: () => {
-            toast.error("U kon niet worden ingelogd. Controleer de invoer en probeer het opnieuw.");
+        onSubmit: async ({ value }) => {
+            await loginMutation.mutateAsync({
+                email: value.email,
+                password: value.password,
+            }, {
+                onSuccess: () => {
+                    localStorage.setItem('isAuthenticated', 'true');
+                    toast.success("U bent succesvol ingelogd.");
+                    navigate({ to: search.redirectPath || '/' });
+                },
+                onError: () => {
+                    toast.error("U kon niet worden ingelogd. Controleer de invoer en probeer het opnieuw.");
+                },
+                onSettled: async () => {
+                    await router.invalidate();
+                    await queryClient.invalidateQueries();
+                },
+            });
         },
         validators: {
             onSubmit: z.object({
