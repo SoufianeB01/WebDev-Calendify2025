@@ -1,14 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router';
-import Login from '../components/Login';
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/')({
-  component: App,
+export const Route = createFileRoute("/")({
+  beforeLoad: () => {
+    throw redirect({ to: "/dashboard" });
+  },
 });
-
-function App() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Login />
-    </div>
-  );
-}

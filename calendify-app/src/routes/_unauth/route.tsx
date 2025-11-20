@@ -15,5 +15,9 @@ export const Route = createFileRoute('/_unauth')({
 });
 
 function RouteComponent() {
-  return <Outlet />;
+  return (
+    <main className="flex justify-center items-center w-full px-4 py-8 min-h-screen">
+      <Outlet />
+    </main>
+  );
 }
