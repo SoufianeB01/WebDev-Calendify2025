@@ -12,11 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnauthRouteRouteImport } from './routes/_unauth/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
+import { Route as UnauthPasswordResetIndexRouteImport } from './routes/_unauth/password-reset/index'
+import { Route as UnauthPasswordForgotIndexRouteImport } from './routes/_unauth/password-forgot/index'
 import { Route as UnauthLoginIndexRouteImport } from './routes/_unauth/login/index'
-import { Route as AuthTestIndexRouteImport } from './routes/_auth/test/index'
+import { Route as AuthUsersIndexRouteImport } from './routes/_auth/users/index'
+import { Route as AuthRoomsIndexRouteImport } from './routes/_auth/rooms/index'
+import { Route as AuthOfficeAttendanceIndexRouteImport } from './routes/_auth/office-attendance/index'
+import { Route as AuthEventsIndexRouteImport } from './routes/_auth/events/index'
 import { Route as AuthDashboardIndexRouteImport } from './routes/_auth/dashboard/index'
-import { Route as DemoFormAddressRouteImport } from './routes/demo.form.address'
+import { Route as AuthAdminIndexRouteImport } from './routes/_auth/admin/index'
 
 const UnauthRouteRoute = UnauthRouteRouteImport.update({
   id: '/_unauth',
@@ -31,19 +35,42 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
-  id: '/demo/tanstack-query',
-  path: '/demo/tanstack-query',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const UnauthPasswordResetIndexRoute =
+  UnauthPasswordResetIndexRouteImport.update({
+    id: '/password-reset/',
+    path: '/password-reset/',
+    getParentRoute: () => UnauthRouteRoute,
+  } as any)
+const UnauthPasswordForgotIndexRoute =
+  UnauthPasswordForgotIndexRouteImport.update({
+    id: '/password-forgot/',
+    path: '/password-forgot/',
+    getParentRoute: () => UnauthRouteRoute,
+  } as any)
 const UnauthLoginIndexRoute = UnauthLoginIndexRouteImport.update({
   id: '/login/',
   path: '/login/',
   getParentRoute: () => UnauthRouteRoute,
 } as any)
-const AuthTestIndexRoute = AuthTestIndexRouteImport.update({
-  id: '/test/',
-  path: '/test/',
+const AuthUsersIndexRoute = AuthUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthRoomsIndexRoute = AuthRoomsIndexRouteImport.update({
+  id: '/rooms/',
+  path: '/rooms/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthOfficeAttendanceIndexRoute =
+  AuthOfficeAttendanceIndexRouteImport.update({
+    id: '/office-attendance/',
+    path: '/office-attendance/',
+    getParentRoute: () => AuthRouteRoute,
+  } as any)
+const AuthEventsIndexRoute = AuthEventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
   getParentRoute: () => AuthRouteRoute,
 } as any)
 const AuthDashboardIndexRoute = AuthDashboardIndexRouteImport.update({
@@ -51,74 +78,96 @@ const AuthDashboardIndexRoute = AuthDashboardIndexRouteImport.update({
   path: '/dashboard/',
   getParentRoute: () => AuthRouteRoute,
 } as any)
-const DemoFormAddressRoute = DemoFormAddressRouteImport.update({
-  id: '/demo/form/address',
-  path: '/demo/form/address',
-  getParentRoute: () => rootRouteImport,
+const AuthAdminIndexRoute = AuthAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AuthRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
+  '/admin': typeof AuthAdminIndexRoute
   '/dashboard': typeof AuthDashboardIndexRoute
-  '/test': typeof AuthTestIndexRoute
+  '/events': typeof AuthEventsIndexRoute
+  '/office-attendance': typeof AuthOfficeAttendanceIndexRoute
+  '/rooms': typeof AuthRoomsIndexRoute
+  '/users': typeof AuthUsersIndexRoute
   '/login': typeof UnauthLoginIndexRoute
+  '/password-forgot': typeof UnauthPasswordForgotIndexRoute
+  '/password-reset': typeof UnauthPasswordResetIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
+  '/admin': typeof AuthAdminIndexRoute
   '/dashboard': typeof AuthDashboardIndexRoute
-  '/test': typeof AuthTestIndexRoute
+  '/events': typeof AuthEventsIndexRoute
+  '/office-attendance': typeof AuthOfficeAttendanceIndexRoute
+  '/rooms': typeof AuthRoomsIndexRoute
+  '/users': typeof AuthUsersIndexRoute
   '/login': typeof UnauthLoginIndexRoute
+  '/password-forgot': typeof UnauthPasswordForgotIndexRoute
+  '/password-reset': typeof UnauthPasswordResetIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_unauth': typeof UnauthRouteRouteWithChildren
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
+  '/_auth/admin/': typeof AuthAdminIndexRoute
   '/_auth/dashboard/': typeof AuthDashboardIndexRoute
-  '/_auth/test/': typeof AuthTestIndexRoute
+  '/_auth/events/': typeof AuthEventsIndexRoute
+  '/_auth/office-attendance/': typeof AuthOfficeAttendanceIndexRoute
+  '/_auth/rooms/': typeof AuthRoomsIndexRoute
+  '/_auth/users/': typeof AuthUsersIndexRoute
   '/_unauth/login/': typeof UnauthLoginIndexRoute
+  '/_unauth/password-forgot/': typeof UnauthPasswordForgotIndexRoute
+  '/_unauth/password-reset/': typeof UnauthPasswordResetIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/demo/tanstack-query'
-    | '/demo/form/address'
+    | '/admin'
     | '/dashboard'
-    | '/test'
+    | '/events'
+    | '/office-attendance'
+    | '/rooms'
+    | '/users'
     | '/login'
+    | '/password-forgot'
+    | '/password-reset'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/demo/tanstack-query'
-    | '/demo/form/address'
+    | '/admin'
     | '/dashboard'
-    | '/test'
+    | '/events'
+    | '/office-attendance'
+    | '/rooms'
+    | '/users'
     | '/login'
+    | '/password-forgot'
+    | '/password-reset'
   id:
     | '__root__'
     | '/'
     | '/_auth'
     | '/_unauth'
-    | '/demo/tanstack-query'
-    | '/demo/form/address'
+    | '/_auth/admin/'
     | '/_auth/dashboard/'
-    | '/_auth/test/'
+    | '/_auth/events/'
+    | '/_auth/office-attendance/'
+    | '/_auth/rooms/'
+    | '/_auth/users/'
     | '/_unauth/login/'
+    | '/_unauth/password-forgot/'
+    | '/_unauth/password-reset/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   UnauthRouteRoute: typeof UnauthRouteRouteWithChildren
-  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
-  DemoFormAddressRoute: typeof DemoFormAddressRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -144,12 +193,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/tanstack-query': {
-      id: '/demo/tanstack-query'
-      path: '/demo/tanstack-query'
-      fullPath: '/demo/tanstack-query'
-      preLoaderRoute: typeof DemoTanstackQueryRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_unauth/password-reset/': {
+      id: '/_unauth/password-reset/'
+      path: '/password-reset'
+      fullPath: '/password-reset'
+      preLoaderRoute: typeof UnauthPasswordResetIndexRouteImport
+      parentRoute: typeof UnauthRouteRoute
+    }
+    '/_unauth/password-forgot/': {
+      id: '/_unauth/password-forgot/'
+      path: '/password-forgot'
+      fullPath: '/password-forgot'
+      preLoaderRoute: typeof UnauthPasswordForgotIndexRouteImport
+      parentRoute: typeof UnauthRouteRoute
     }
     '/_unauth/login/': {
       id: '/_unauth/login/'
@@ -158,11 +214,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UnauthLoginIndexRouteImport
       parentRoute: typeof UnauthRouteRoute
     }
-    '/_auth/test/': {
-      id: '/_auth/test/'
-      path: '/test'
-      fullPath: '/test'
-      preLoaderRoute: typeof AuthTestIndexRouteImport
+    '/_auth/users/': {
+      id: '/_auth/users/'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AuthUsersIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/rooms/': {
+      id: '/_auth/rooms/'
+      path: '/rooms'
+      fullPath: '/rooms'
+      preLoaderRoute: typeof AuthRoomsIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/office-attendance/': {
+      id: '/_auth/office-attendance/'
+      path: '/office-attendance'
+      fullPath: '/office-attendance'
+      preLoaderRoute: typeof AuthOfficeAttendanceIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/events/': {
+      id: '/_auth/events/'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof AuthEventsIndexRouteImport
       parentRoute: typeof AuthRouteRoute
     }
     '/_auth/dashboard/': {
@@ -172,24 +249,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthDashboardIndexRouteImport
       parentRoute: typeof AuthRouteRoute
     }
-    '/demo/form/address': {
-      id: '/demo/form/address'
-      path: '/demo/form/address'
-      fullPath: '/demo/form/address'
-      preLoaderRoute: typeof DemoFormAddressRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_auth/admin/': {
+      id: '/_auth/admin/'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthAdminIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
     }
   }
 }
 
 interface AuthRouteRouteChildren {
+  AuthAdminIndexRoute: typeof AuthAdminIndexRoute
   AuthDashboardIndexRoute: typeof AuthDashboardIndexRoute
-  AuthTestIndexRoute: typeof AuthTestIndexRoute
+  AuthEventsIndexRoute: typeof AuthEventsIndexRoute
+  AuthOfficeAttendanceIndexRoute: typeof AuthOfficeAttendanceIndexRoute
+  AuthRoomsIndexRoute: typeof AuthRoomsIndexRoute
+  AuthUsersIndexRoute: typeof AuthUsersIndexRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
+  AuthAdminIndexRoute: AuthAdminIndexRoute,
   AuthDashboardIndexRoute: AuthDashboardIndexRoute,
-  AuthTestIndexRoute: AuthTestIndexRoute,
+  AuthEventsIndexRoute: AuthEventsIndexRoute,
+  AuthOfficeAttendanceIndexRoute: AuthOfficeAttendanceIndexRoute,
+  AuthRoomsIndexRoute: AuthRoomsIndexRoute,
+  AuthUsersIndexRoute: AuthUsersIndexRoute,
 }
 
 const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
@@ -198,10 +283,14 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 
 interface UnauthRouteRouteChildren {
   UnauthLoginIndexRoute: typeof UnauthLoginIndexRoute
+  UnauthPasswordForgotIndexRoute: typeof UnauthPasswordForgotIndexRoute
+  UnauthPasswordResetIndexRoute: typeof UnauthPasswordResetIndexRoute
 }
 
 const UnauthRouteRouteChildren: UnauthRouteRouteChildren = {
   UnauthLoginIndexRoute: UnauthLoginIndexRoute,
+  UnauthPasswordForgotIndexRoute: UnauthPasswordForgotIndexRoute,
+  UnauthPasswordResetIndexRoute: UnauthPasswordResetIndexRoute,
 }
 
 const UnauthRouteRouteWithChildren = UnauthRouteRoute._addFileChildren(
@@ -212,8 +301,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   UnauthRouteRoute: UnauthRouteRouteWithChildren,
-  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
-  DemoFormAddressRoute: DemoFormAddressRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

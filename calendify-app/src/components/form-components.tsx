@@ -1,6 +1,6 @@
 import { useStore } from '@tanstack/react-form'
 
-import { useFieldContext, useFormContext } from '../hooks/demo.form-context'
+import { useFieldContext, useFormContext } from '../hooks/use-form-context'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,13 +9,20 @@ import * as ShadcnSelect from '@/components/ui/select'
 import { Slider as ShadcnSlider } from '@/components/ui/slider'
 import { Switch as ShadcnSwitch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 
-export function SubscribeButton({ label }: { label: string }) {
+export function SubscribeButton({
+  label,
+  className
+}: {
+  label: string,
+  className?: string
+}) {
   const form = useFormContext()
   return (
     <form.Subscribe selector={(state) => state.isSubmitting}>
       {(isSubmitting) => (
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} className={cn('', className)}>
           {label}
         </Button>
       )}
@@ -65,6 +72,7 @@ export function TextField({
         placeholder={placeholder}
         onBlur={field.handleBlur}
         onChange={(e) => field.handleChange(e.target.value)}
+        className="w-full h-12"
       />
       {field.state.meta.isTouched && <ErrorMessages errors={errors} />}
     </div>
