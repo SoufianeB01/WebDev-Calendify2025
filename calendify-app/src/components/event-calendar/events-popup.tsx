@@ -1,7 +1,8 @@
 import { format, isSameDay } from 'date-fns';
-import { nl } from 'date-fns/locale';
+import { enGB, nl } from 'date-fns/locale';
 import { XIcon } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '../ui/button';
 import type { CalendarEvent } from '@/components/event-calendar';
@@ -22,6 +23,13 @@ export function EventsPopup({
     onClose,
     onEventSelect,
 }: EventsPopupProps) {
+    const { i18n } = useTranslation();
+    const dateFnsLocale = useMemo(() => {
+        const lang = i18n.language || 'en-GB';
+        if (lang.startsWith('nl'))
+            return nl;
+        return enGB;
+    }, [i18n.language]);
     const popupRef = useRef<HTMLDivElement>(null);
 
     // Handle click outside to close popup
@@ -65,7 +73,7 @@ export function EventsPopup({
             className="bg-background absolute z-50 max-h-96 w-80 overflow-auto rounded-md border shadow-lg"
         >
             <div className="bg-background sticky top-0 flex items-center justify-between border-b p-3">
-                <h3 className="font-medium">{format(date, 'd MMMM yyyy', { locale: nl })}</h3>
+                <h3 className="font-medium">{format(date, 'd MMMM yyyy', { locale: dateFnsLocale })}</h3>
                 <Button
                     onClick={onClose}
                     className="hover:bg-muted rounded-full p-1"

@@ -16,6 +16,7 @@ import {
 } from 'date-fns';
 import { enGB, nl } from 'date-fns/locale';
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Popover,
     PopoverContent,
@@ -60,15 +61,23 @@ export function WeekView({
     onEventSelect,
     onEventCreate,
 }: WeekViewProps) {
+    const { i18n, t } = useTranslation('dashboard');
+    const dateFnsLocale = useMemo(() => {
+        const lang = i18n.language || 'en-GB';
+        if (lang.startsWith('nl'))
+            return nl;
+        return enGB;
+    }, [i18n.language]);
+
     const days = useMemo(() => {
-        const weekStart = startOfWeek(currentDate, { locale: nl });
-        const weekEnd = endOfWeek(currentDate, { locale: nl });
+        const weekStart = startOfWeek(currentDate, { locale: dateFnsLocale });
+        const weekEnd = endOfWeek(currentDate, { locale: dateFnsLocale });
         return eachDayOfInterval({ start: weekStart, end: weekEnd });
-    }, [currentDate, nl]);
+    }, [currentDate, dateFnsLocale]);
 
     const weekStart = useMemo(
-        () => startOfWeek(currentDate, { locale: nl }),
-        [currentDate, nl],
+        () => startOfWeek(currentDate, { locale: dateFnsLocale }),
+        [currentDate, dateFnsLocale],
     );
 
     const hours = useMemo(() => {
@@ -138,7 +147,7 @@ export function WeekView({
             });
 
             // Group events by hour to determine which should be stacked
-            const eventsByHour = new Map<number, Array<CalendarEvent>>();
+            const eventsByHour = new Map<number, CalendarEvent[]>();
 
             sortedEvents.forEach((event) => {
                 const eventStart = new Date(event.start);
@@ -152,11 +161,11 @@ export function WeekView({
             });
 
             // Calculate positions for each event
-            const positionedEvents: Array<PositionedEvent> = [];
+            const positionedEvents: PositionedEvent[] = [];
             const dayStart = startOfDay(day);
 
             // Track columns for overlapping events
-            const columns: Array<Array<{ event: CalendarEvent; end: Date }>> = [];
+            const columns: { event: CalendarEvent; end: Date }[][] = [];
 
             sortedEvents.forEach((event) => {
                 const eventStart = new Date(event.start);
@@ -252,7 +261,7 @@ export function WeekView({
     // Group events by hour for each day to show stacked layout
     const eventsByDayAndHour = useMemo(() => {
         const result = days.map((day) => {
-            const hourGroups = new Map<number, Array<CalendarEvent>>();
+            const hourGroups = new Map<number, CalendarEvent[]>();
 
             // Get events for this day that are not all-day events or multi-day events
             const dayEvents = events.filter((event) => {
@@ -310,11 +319,11 @@ export function WeekView({
                         data-today={isToday(day) || undefined}
                     >
                         <span className="sm:hidden" aria-hidden="true">
-                            {format(day, 'E', { locale: nl })[0]}
+                            {format(day, 'E', { locale: dateFnsLocale })[0]}
                             {' '}
-                            {format(day, 'd', { locale: nl })}
+                            {format(day, 'd', { locale: dateFnsLocale })}
                         </span>
-                        <span className="max-sm:hidden">{format(day, 'EEE dd', { locale: nl })}</span>
+                        <span className="max-sm:hidden">{format(day, 'EEE dd', { locale: dateFnsLocale })}</span>
                     </div>
                 ))}
             </div>
@@ -324,7 +333,7 @@ export function WeekView({
                     <div className="grid grid-cols-8">
                         <div className="border-border/70 relative border-r">
                             <span className="text-muted-foreground/70 absolute bottom-0 left-0 h-6 w-16 max-w-full pe-2 text-right text-[10px] sm:pe-4 sm:text-xs">
-                                Alle dagen
+                                {t('planning.allDay', 'All day')}
                             </span>
                         </div>
                         {days.map((day, dayIndex) => {
@@ -495,7 +504,7 @@ export function WeekView({
                                                                     {' '}
                                                                     {remainingCount}
                                                                     {' '}
-                                                                    <span className="max-sm:sr-only">meer</span>
+                                                                    <span className="max-sm:sr-only">{t('planning.message.moreMsgs', 'more')}</span>
                                                                 </span>
                                                             </Button>
                                                         </PopoverTrigger>
@@ -510,7 +519,7 @@ export function WeekView({
                                                         >
                                                             <div className="space-y-2">
                                                                 <div className="text-sm font-medium">
-                                                                    {format(day, 'd MMM, EEEE', { locale: nl })}
+                                                                    {format(day, 'd MMM, EEEE', { locale: dateFnsLocale })}
                                                                 </div>
                                                                 <div className="space-y-1">
                                                                     {remainingEvents.map((event) => {

@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using CalendifyWebAppAPI.Data;
 using CalendifyWebAppAPI.Models;
 using System.Linq;
-using CalendifyWebAppAPI.Services.Interfaces;
 
 namespace CalendifyWebAppAPI.Controllers
 {
@@ -10,41 +9,36 @@ namespace CalendifyWebAppAPI.Controllers
     [Route("api/[controller]")]
     public class UserController : GenericCrudController<Employee, int>
     {
-        private readonly IUserService _userService;
-
-        public UserController(AppDbContext context, IUserService userService) : base(context)
-        {
-            _userService = userService;
-        }
+        public UserController(AppDbContext context) : base(context) { }
 
         [HttpPost("auth")] //post
         public IActionResult Login([FromBody] LoginRequest login)
         {
-            var (success, user, error) = _userService.Login(login.Email, login.Password);
-            if (!success || user == null)
+            var employee_ = _context.Employees.FirstOrDefault(e => e.Email == login.Email);
+            if (employee_ == null)
             {
-                if (error == "Employee not found")
-                {
-                    return NotFound(new { message = error });
-                }
-                return BadRequest(new { message = error ?? "Login failed" });
+                return NotFound(new { message = "Employee not found" });
             }
 
-            return Ok(new { message = "Login successful", userId = user.UserId, email = user.Email, role = user.Role });
+            if (employee_.Password != login.Password)
+            {
+                return BadRequest(new { message = "Incorrect password" });
+            }
+
+            return Ok(new { message = "Login successful", userId = employee_.UserId, email = employee_.Email, role = employee_.Role });
         }
 
         [HttpPost] //post
         public override IActionResult Create([FromBody] Employee newEmployee)
         {
-            try
-            {
-                var created = _userService.Register(newEmployee);
-                return Ok(created);
-            }
-            catch (InvalidOperationException)
+            if (_context.Employees.Any(e => e.Email == newEmployee.Email))
             {
                 return BadRequest(new { message = "Email already exists" });
             }
+
+            _context.Employees.Add(newEmployee);
+            _context.SaveChanges();
+            return Ok(newEmployee.Email);
         }
 
         [HttpPut("{id}")] //put

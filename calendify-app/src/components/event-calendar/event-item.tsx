@@ -1,5 +1,7 @@
 import { format, getMinutes, isPast } from 'date-fns';
+import { MoveUpRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { CalendarEvent } from '@/components/event-calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -107,6 +109,7 @@ export function EventItem({
     onTouchStart,
 }: EventItemProps) {
     const eventColor = event.color;
+    const { t } = useTranslation('dashboard');
 
     // Use the provided currentTime (for dragging) or the event's actual time
     const displayStart = useMemo(() => {
@@ -184,6 +187,18 @@ export function EventItem({
                         {event.description && (
                             <div className="text-sm mb-1 opacity-90">{event.description}</div>
                         )}
+                        <a
+                            href={`${normalizeBaseUrl(import.meta.env.VITE_DOMAIN_ELEKTRA_APP)}/projects/${event.id}/applications/request-concerning`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <p
+                                className="mt-3 self-start text-sm text-brand-primary font-semibold hover:cursor-pointer"
+                            >
+                                {t('dashboard.planning.message.openInElectra')}
+                                <MoveUpRight size={16} className="inline ml-1" />
+                            </p>
+                        </a>
                     </div>
                 </PopoverContent>
             </Popover>
@@ -232,6 +247,18 @@ export function EventItem({
                         {event.description && (
                             <div className="text-sm mb-1 opacity-90">{event.description}</div>
                         )}
+                        <a
+                            href={`${normalizeBaseUrl(import.meta.env.VITE_DOMAIN_ELEKTRA_APP)}/projects/${event.id}/applications/request-concerning`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <p
+                                className="mt-3 self-start text-sm text-brand-primary font-semibold hover:cursor-pointer"
+                            >
+                                {t('dashboard.planning.message.openInElectra')}
+                                <MoveUpRight size={16} className="inline ml-1" />
+                            </p>
+                        </a>
                     </div>
                 </PopoverContent>
             </Popover>
@@ -277,6 +304,18 @@ export function EventItem({
             {event.description && (
                 <div className="text-xs opacity-90">{event.description}</div>
             )}
+            <a
+                href={`${normalizeBaseUrl(import.meta.env.VITE_DOMAIN_ELEKTRA_APP)}/projects/${event.id}/applications/request-concerning`}
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <p
+                    className="mt-3 self-start text-sm text-brand-primary font-semibold hover:cursor-pointer"
+                >
+                    {t('dashboard.planning.message.openInElectra')}
+                    <MoveUpRight size={16} className="inline ml-1" />
+                </p>
+            </a>
         </div>
     );
 }

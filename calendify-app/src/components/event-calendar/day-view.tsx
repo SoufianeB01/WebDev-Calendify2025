@@ -11,6 +11,7 @@ import {
 } from 'date-fns';
 import { enGB, nl } from 'date-fns/locale';
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { CalendarEvent } from '@/components/event-calendar';
 
@@ -48,6 +49,13 @@ export function DayView({
     onEventSelect,
     onEventCreate,
 }: DayViewProps) {
+    const { i18n, t } = useTranslation('dashboard');
+    const dateFnsLocale = useMemo(() => {
+        const lang = i18n.language || 'en-GB';
+        if (lang.startsWith('nl'))
+            return nl;
+        return enGB;
+    }, [i18n.language]);
     const hours = useMemo(() => {
         const dayStart = startOfDay(currentDate);
         return eachHourOfInterval({
@@ -197,7 +205,7 @@ export function DayView({
                     <div className="grid grid-cols-[3rem_1fr] sm:grid-cols-[4rem_1fr]">
                         <div className="relative">
                             <span className="text-muted-foreground/70 absolute bottom-0 left-0 h-6 w-16 max-w-full pe-2 text-right text-[10px] sm:pe-4 sm:text-xs">
-                                Alle dagen
+                                {t('planning.allDay', 'All day')}
                             </span>
                         </div>
                         <div className="border-border/70 relative border-r p-1 last:border-r-0">
@@ -235,7 +243,7 @@ export function DayView({
                         >
                             {index > 0 && (
                                 <span className="bg-background text-muted-foreground/70 absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end pe-2 text-[10px] sm:pe-4 sm:text-xs">
-                                    {format(hour, 'HH:mm', { locale: nl })}
+                                    {format(hour, 'HH:mm', { locale: dateFnsLocale })}
                                 </span>
                             )}
                         </div>
