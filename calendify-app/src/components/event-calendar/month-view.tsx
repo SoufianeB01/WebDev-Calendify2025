@@ -10,9 +10,8 @@ import {
     startOfMonth,
     startOfWeek,
 } from 'date-fns';
-import { enGB, nl } from 'date-fns/locale';
+import { nl } from 'date-fns/locale';
 import React, { useEffect, useMemo, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/button';
 
 import type { CalendarEvent } from '@/components/event-calendar';
@@ -50,30 +49,22 @@ export function MonthView({
     onEventSelect,
     onEventCreate,
 }: MonthViewProps) {
-    const { i18n } = useTranslation();
-    // Map i18n language to date-fns locale. Extend as more languages are supported.
-    const dateFnsLocale = useMemo(() => {
-        const lang = i18n.language || 'en-GB';
-        if (lang.startsWith('nl'))
-            return nl;
-        return enGB;
-    }, [i18n.language]);
     const days = useMemo(() => {
         const monthStart = startOfMonth(currentDate);
         const monthEnd = endOfMonth(monthStart);
         // Use locale to determine week start (e.g., Monday for nl, Sunday for en-US/en-GB as configured by locale)
-        const calendarStart = startOfWeek(monthStart, { locale: dateFnsLocale });
-        const calendarEnd = endOfWeek(monthEnd, { locale: dateFnsLocale });
+        const calendarStart = startOfWeek(monthStart, { locale: nl });
+        const calendarEnd = endOfWeek(monthEnd, { locale: nl });
 
         return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
-    }, [currentDate, dateFnsLocale]);
+    }, [currentDate, nl]);
 
     const weekdays = useMemo(() => {
         return Array.from({ length: 7 }).map((_, i) => {
-            const date = addDays(startOfWeek(new Date(), { locale: dateFnsLocale }), i);
-            return format(date, 'EEE', { locale: dateFnsLocale });
+            const date = addDays(startOfWeek(new Date(), { locale: nl }), i);
+            return format(date, 'EEE', { locale: nl });
         });
-    }, [dateFnsLocale]);
+    }, [nl]);
 
     const weeks = useMemo(() => {
         const result = [];
@@ -100,7 +91,7 @@ export function MonthView({
         eventHeight: EventHeight,
         eventGap: EventGap,
     });
-    const { t } = useTranslation('dashboard');
+
     useEffect(() => {
         isMountedRef.current = true;
     }, []);
@@ -124,9 +115,6 @@ export function MonthView({
                         className="grid grid-cols-7 [&:last-child>*]:border-b-0"
                     >
                         {week.map((day, dayIndex) => {
-                            if (!day)
-                                return null; // Skip if day is undefined
-
                             const dayEvents = getEventsForDay(events, day);
                             const spanningEvents = getSpanningEventsForDay(events, day);
                             const isCurrentMonth = isSameMonth(day, currentDate);
@@ -161,7 +149,7 @@ export function MonthView({
                                         }}
                                     >
                                         <div className="group-data-today:bg-primary group-data-today:text-primary-foreground mt-1 inline-flex size-6 items-center justify-center rounded-full text-sm">
-                                            {format(day, 'd', { locale: dateFnsLocale })}
+                                            {format(day, 'd', { locale: nl })}
                                         </div>
                                         <div
                                             ref={isReferenceCell ? contentRef : null}
@@ -199,7 +187,7 @@ export function MonthView({
                                                                             {format(
                                                                                 new Date(event.start),
                                                                                 'HH:mm',
-                                                                                { locale: dateFnsLocale },
+                                                                                { locale: nl },
                                                                             )}
                                                                             {' '}
                                                                         </span>
@@ -239,7 +227,7 @@ export function MonthView({
                                                                 {' '}
                                                                 {remainingCount}
                                                                 {' '}
-                                                                <span className="max-sm:sr-only">{t('dashboard.planning.message.moreMsgs')}</span>
+                                                                <span className="max-sm:sr-only">meer</span>
                                                             </span>
                                                         </Button>
                                                     </PopoverTrigger>
@@ -254,7 +242,7 @@ export function MonthView({
                                                     >
                                                         <div className="space-y-2">
                                                             <div className="text-sm font-medium">
-                                                                {format(day, 'd MMM, EEEE', { locale: dateFnsLocale })}
+                                                                {format(day, 'd MMM, EEEE', { locale: nl })}
                                                             </div>
                                                             <div className="space-y-1">
                                                                 {sortEvents(allEvents)
