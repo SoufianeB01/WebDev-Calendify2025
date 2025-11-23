@@ -25,6 +25,10 @@ namespace CalendifyWebAppAPI.Controllers
                 return BadRequest(new { message = "Incorrect password" });
             }
 
+            HttpContext.Session.SetInt32("UserId", employee_.UserId);
+            HttpContext.Session.SetString("UserEmail", employee_.Email);
+            HttpContext.Session.SetString("UserRole", employee_.Role);
+
             return Ok(new { message = "Login successful", userId = employee_.UserId, email = employee_.Email, role = employee_.Role });
         }
 
@@ -75,6 +79,22 @@ namespace CalendifyWebAppAPI.Controllers
             }
 
             return Ok(employee_);
+        }
+
+        [HttpGet("me")]
+        public IActionResult Me()
+        {
+            var id = HttpContext.Session.GetInt32("UserId");
+            if (id == null)
+            {
+                return Unauthorized(new { message = "No active session" });
+            }
+            return Ok(new
+            {
+                userId = id,
+                email = HttpContext.Session.GetString("UserEmail"),
+                role = HttpContext.Session.GetString("UserRole")
+            });
         }
     }
 }
