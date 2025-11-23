@@ -19,6 +19,15 @@ namespace CalendifyWebAppAPI.Middleware
 
             await _next(context);
 
+            // Post-processing
+            if (userId.HasValue)
+            {
+                Console.WriteLine($"[{context.Response.StatusCode}] {context.Request.Path} (user {userId})");
+            }
+            else
+            {
+                Console.WriteLine($"[{context.Response.StatusCode}] {context.Request.Path} (no session)");
+            }
         }
     }
 }
