@@ -1,5 +1,6 @@
 using CalendifyWebAppAPI.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,17 +18,37 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.None    // allow cookie over http in dev
+        : CookieSecurePolicy.Always;
+});
+
+// CORS (dev) allow credentials
+builder.Services.AddCors(o =>
+{
+    o.AddPolicy("Dev", p =>
+        p.WithOrigins(
+            "http://localhost:3000",
+            "https://localhost:3000"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
 });
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+
+
+if (!app.Environment.IsDevelopment())
 {
+    app.UseHttpsRedirection();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseCors("Dev"); // CORS
 app.UseSession();
 app.UseMiddleware<CalendifyWebAppAPI.Middleware.SessionMiddleware>();
 app.UseAuthorization();

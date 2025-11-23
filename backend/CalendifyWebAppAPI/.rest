@@ -7,8 +7,14 @@ Content-Type: application/json
   "password": "1234"
 }
 
-### Current session user
-GET http://localhost:5143/api/user/me
+### Login
+POST http://localhost:5143/api/user/auth
+Content-Type: application/json
+
+{
+  "email": "new.employee@company.com",
+  "password": "password123"
+}
 
 ### Register
 POST http://localhost:5143/api/user
