@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using CalendifyWebAppAPI.Data;
 using CalendifyWebAppAPI.Models;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
 
 namespace CalendifyWebAppAPI.Controllers
 {
@@ -9,7 +10,12 @@ namespace CalendifyWebAppAPI.Controllers
     [Route("api/[controller]")]
     public class UserController : GenericCrudController<Employee, int>
     {
-        public UserController(AppDbContext context) : base(context) { }
+        private readonly IPasswordHasher<Employee> _passwordHasher;
+
+        public UserController(AppDbContext context, IPasswordHasher<Employee> passwordHasher) : base(context)
+        {
+            _passwordHasher = passwordHasher;
+        }
 
         [HttpPost("auth")] //post
         public IActionResult Login([FromBody] LoginRequest login)
@@ -20,7 +26,8 @@ namespace CalendifyWebAppAPI.Controllers
                 return NotFound(new { message = "Employee not found" });
             }
 
-            if (employee_.Password != login.Password)
+            var verify = _passwordHasher.VerifyHashedPassword(employee_, employee_.Password, login.Password);
+            if (verify == PasswordVerificationResult.Failed)
             {
                 return BadRequest(new { message = "Incorrect password" });
             }
@@ -36,9 +43,10 @@ namespace CalendifyWebAppAPI.Controllers
                 return BadRequest(new { message = "Email already exists" });
             }
 
+            newEmployee.Password = _passwordHasher.HashPassword(newEmployee, newEmployee.Password);
             _context.Employees.Add(newEmployee);
             _context.SaveChanges();
-            return Ok(newEmployee.Email);
+            return Ok(newEmployee);
         }
 
         [HttpPut("{id}")] //put
@@ -60,7 +68,10 @@ namespace CalendifyWebAppAPI.Controllers
             employee_.Name = updatedEmployee.Name;
             employee_.Email = updatedEmployee.Email;
             employee_.Role = updatedEmployee.Role;
-            employee_.Password = updatedEmployee.Password;
+            if (!string.IsNullOrEmpty(updatedEmployee.Password))
+            {
+                employee_.Password = _passwordHasher.HashPassword(employee_, updatedEmployee.Password);
+            }
             _context.SaveChanges();
             return Ok(employee_);
         }
