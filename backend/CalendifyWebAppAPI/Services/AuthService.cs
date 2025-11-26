@@ -36,12 +36,7 @@ namespace CalendifyWebAppAPI.Services
                 }
 
                 var isAdmin = _context.Admins.Any(a => a.UserId == employee.UserId);
-                if (!isAdmin)
-                {
-                    return (false, "User is not an admin", null, false);
-                }
-
-                return (true, string.Empty, employee, true);
+                return (true, string.Empty, employee, isAdmin);
             });
         }
 

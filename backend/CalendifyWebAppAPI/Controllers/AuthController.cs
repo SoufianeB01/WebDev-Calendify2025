@@ -1,6 +1,8 @@
 using CalendifyWebAppAPI.Models;
 using CalendifyWebAppAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using CalendifyWebAppAPI.Data;
+using System.Linq;
 
 namespace CalendifyWebAppAPI.Controllers
 {
@@ -9,10 +11,12 @@ namespace CalendifyWebAppAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly AppDbContext _context;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, AppDbContext context)
         {
             _authService = authService;
+            _context = context;
         }
 
         [HttpPost("login")]
@@ -31,6 +35,26 @@ namespace CalendifyWebAppAPI.Controllers
             HttpContext.Session.SetString("Role", isAdmin ? "Admin" : "User");
 
             return Ok(new { message = "Login successful", name = employee.Name, role = isAdmin ? "Admin" : "User" });
+        }
+
+        [HttpPost("register")]
+        public IActionResult Register([FromBody] Employee newEmployee)
+        {
+            if (_context.Employees.Any(e => e.Email == newEmployee.Email))
+            {
+                return BadRequest(new { message = "Email already exists" });
+            }
+
+            // Default to User role if not provided
+            if (string.IsNullOrWhiteSpace(newEmployee.Role))
+            {
+                newEmployee.Role = "User";
+            }
+
+            newEmployee.Password = _authService.HashPassword(newEmployee, newEmployee.Password);
+            _context.Employees.Add(newEmployee);
+            _context.SaveChanges();
+            return Ok(new { message = "Registered", userId = newEmployee.UserId, email = newEmployee.Email, role = newEmployee.Role });
         }
 
         [HttpPost("logout")]
