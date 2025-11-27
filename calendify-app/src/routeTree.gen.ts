@@ -9,11 +9,24 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnauthRouteRouteImport } from './routes/_unauth/route'
+import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
-import { Route as DemoFormSimpleRouteImport } from './routes/demo.form.simple'
+import { Route as UnauthLoginIndexRouteImport } from './routes/_unauth/login/index'
+import { Route as AuthDashboardIndexRouteImport } from './routes/_auth/dashboard/index'
 import { Route as DemoFormAddressRouteImport } from './routes/demo.form.address'
+import { Route as AuthDashboardRoomIndexRouteImport } from './routes/_auth/dashboard/room/index'
+import { Route as AuthDashboardEventsIndexRouteImport } from './routes/_auth/dashboard/events/index'
 
+const UnauthRouteRoute = UnauthRouteRouteImport.update({
+  id: '/_unauth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRouteRoute = AuthRouteRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -24,35 +37,62 @@ const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   path: '/demo/tanstack-query',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoFormSimpleRoute = DemoFormSimpleRouteImport.update({
-  id: '/demo/form/simple',
-  path: '/demo/form/simple',
-  getParentRoute: () => rootRouteImport,
+const UnauthLoginIndexRoute = UnauthLoginIndexRouteImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => UnauthRouteRoute,
+} as any)
+const AuthDashboardIndexRoute = AuthDashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => AuthRouteRoute,
 } as any)
 const DemoFormAddressRoute = DemoFormAddressRouteImport.update({
   id: '/demo/form/address',
   path: '/demo/form/address',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthDashboardRoomIndexRoute = AuthDashboardRoomIndexRouteImport.update({
+  id: '/dashboard/room/',
+  path: '/dashboard/room/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthDashboardEventsIndexRoute =
+  AuthDashboardEventsIndexRouteImport.update({
+    id: '/dashboard/events/',
+    path: '/dashboard/events/',
+    getParentRoute: () => AuthRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
+  '/dashboard': typeof AuthDashboardIndexRoute
+  '/login': typeof UnauthLoginIndexRoute
+  '/dashboard/events': typeof AuthDashboardEventsIndexRoute
+  '/dashboard/room': typeof AuthDashboardRoomIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
+  '/dashboard': typeof AuthDashboardIndexRoute
+  '/login': typeof UnauthLoginIndexRoute
+  '/dashboard/events': typeof AuthDashboardEventsIndexRoute
+  '/dashboard/room': typeof AuthDashboardRoomIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_auth': typeof AuthRouteRouteWithChildren
+  '/_unauth': typeof UnauthRouteRouteWithChildren
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
+  '/_auth/dashboard/': typeof AuthDashboardIndexRoute
+  '/_unauth/login/': typeof UnauthLoginIndexRoute
+  '/_auth/dashboard/events/': typeof AuthDashboardEventsIndexRoute
+  '/_auth/dashboard/room/': typeof AuthDashboardRoomIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -60,26 +100,56 @@ export interface FileRouteTypes {
     | '/'
     | '/demo/tanstack-query'
     | '/demo/form/address'
-    | '/demo/form/simple'
+    | '/dashboard'
+    | '/login'
+    | '/dashboard/events'
+    | '/dashboard/room'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo/tanstack-query' | '/demo/form/address' | '/demo/form/simple'
-  id:
-    | '__root__'
+  to:
     | '/'
     | '/demo/tanstack-query'
     | '/demo/form/address'
-    | '/demo/form/simple'
+    | '/dashboard'
+    | '/login'
+    | '/dashboard/events'
+    | '/dashboard/room'
+  id:
+    | '__root__'
+    | '/'
+    | '/_auth'
+    | '/_unauth'
+    | '/demo/tanstack-query'
+    | '/demo/form/address'
+    | '/_auth/dashboard/'
+    | '/_unauth/login/'
+    | '/_auth/dashboard/events/'
+    | '/_auth/dashboard/room/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRouteRoute: typeof AuthRouteRouteWithChildren
+  UnauthRouteRoute: typeof UnauthRouteRouteWithChildren
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   DemoFormAddressRoute: typeof DemoFormAddressRoute
-  DemoFormSimpleRoute: typeof DemoFormSimpleRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_unauth': {
+      id: '/_unauth'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof UnauthRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -94,12 +164,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoTanstackQueryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/form/simple': {
-      id: '/demo/form/simple'
-      path: '/demo/form/simple'
-      fullPath: '/demo/form/simple'
-      preLoaderRoute: typeof DemoFormSimpleRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_unauth/login/': {
+      id: '/_unauth/login/'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof UnauthLoginIndexRouteImport
+      parentRoute: typeof UnauthRouteRoute
+    }
+    '/_auth/dashboard/': {
+      id: '/_auth/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthDashboardIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
     }
     '/demo/form/address': {
       id: '/demo/form/address'
@@ -108,14 +185,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoFormAddressRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_auth/dashboard/room/': {
+      id: '/_auth/dashboard/room/'
+      path: '/dashboard/room'
+      fullPath: '/dashboard/room'
+      preLoaderRoute: typeof AuthDashboardRoomIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/dashboard/events/': {
+      id: '/_auth/dashboard/events/'
+      path: '/dashboard/events'
+      fullPath: '/dashboard/events'
+      preLoaderRoute: typeof AuthDashboardEventsIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
   }
 }
 
+interface AuthRouteRouteChildren {
+  AuthDashboardIndexRoute: typeof AuthDashboardIndexRoute
+  AuthDashboardEventsIndexRoute: typeof AuthDashboardEventsIndexRoute
+  AuthDashboardRoomIndexRoute: typeof AuthDashboardRoomIndexRoute
+}
+
+const AuthRouteRouteChildren: AuthRouteRouteChildren = {
+  AuthDashboardIndexRoute: AuthDashboardIndexRoute,
+  AuthDashboardEventsIndexRoute: AuthDashboardEventsIndexRoute,
+  AuthDashboardRoomIndexRoute: AuthDashboardRoomIndexRoute,
+}
+
+const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
+  AuthRouteRouteChildren,
+)
+
+interface UnauthRouteRouteChildren {
+  UnauthLoginIndexRoute: typeof UnauthLoginIndexRoute
+}
+
+const UnauthRouteRouteChildren: UnauthRouteRouteChildren = {
+  UnauthLoginIndexRoute: UnauthLoginIndexRoute,
+}
+
+const UnauthRouteRouteWithChildren = UnauthRouteRoute._addFileChildren(
+  UnauthRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRouteRoute: AuthRouteRouteWithChildren,
+  UnauthRouteRoute: UnauthRouteRouteWithChildren,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   DemoFormAddressRoute: DemoFormAddressRoute,
-  DemoFormSimpleRoute: DemoFormSimpleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -7,17 +7,12 @@ namespace CalendifyWebAppAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AdminsController : ControllerBase
+    public class AdminsController : GenericCrudController<Admin, int>
     {
-        private readonly AppDbContext _context;
-
-        public AdminsController(AppDbContext context)
-        {
-            _context = context;
-        }
+        public AdminsController(AppDbContext context) : base(context) { }
 
         [HttpPost] //post
-        public IActionResult Create([FromBody] Admin admin)
+        public override IActionResult Create([FromBody] Admin admin)
         {
             // Check if user exists
             var user = _context.Employees.Find(admin.UserId);
@@ -35,25 +30,6 @@ namespace CalendifyWebAppAPI.Controllers
 
             _context.Admins.Add(admin);
             _context.SaveChanges();
-            return Ok(admin);
-        }
-
-        [HttpGet] //get
-        public IActionResult GetAll()
-        {
-            var admins = _context.Admins.ToList();
-            return Ok(admins);
-        }
-
-        [HttpGet("{id}")] //get
-        public IActionResult GetById(int id)
-        {
-            var admin = _context.Admins.Find(id);
-            if (admin == null)
-            {
-                return NotFound(new { message = "Admin not found" });
-            }
-
             return Ok(admin);
         }
 
@@ -82,7 +58,7 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpPut("{id}")] //put
-        public IActionResult Update(int id, [FromBody] Admin updated)
+        public override IActionResult Update(int id, [FromBody] Admin updated)
         {
             var admin = _context.Admins.Find(id);
             if (admin == null)
@@ -96,19 +72,6 @@ namespace CalendifyWebAppAPI.Controllers
             return Ok(admin);
         }
 
-        [HttpDelete("{id}")] //delete
-        public IActionResult Delete(int id)
-        {
-            var admin = _context.Admins.Find(id);
-            if (admin == null)
-            {
-                return NotFound(new { message = "Admin not found" });
-            }
-
-            _context.Admins.Remove(admin);
-            _context.SaveChanges();
-            return Ok(new { message = "Admin deleted" });
-        }
     }
 }
 

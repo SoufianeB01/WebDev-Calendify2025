@@ -2,18 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using CalendifyWebAppAPI.Data;
 using CalendifyWebAppAPI.Models;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
 
 namespace CalendifyWebAppAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class UserController : GenericCrudController<Employee, int>
     {
-        private readonly AppDbContext _context;
+        private readonly IPasswordHasher<Employee> _passwordHasher;
 
-        public UserController(AppDbContext context)
+        public UserController(AppDbContext context, IPasswordHasher<Employee> passwordHasher) : base(context)
         {
-            _context = context;
+            _passwordHasher = passwordHasher;
         }
 
         [HttpPost("auth")] //post
@@ -25,7 +26,8 @@ namespace CalendifyWebAppAPI.Controllers
                 return NotFound(new { message = "Employee not found" });
             }
 
-            if (employee_.Password != login.Password)
+            var verify = _passwordHasher.VerifyHashedPassword(employee_, employee_.Password, login.Password);
+            if (verify == PasswordVerificationResult.Failed)
             {
                 return BadRequest(new { message = "Incorrect password" });
             }
@@ -34,39 +36,21 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpPost] //post
-        public IActionResult Register([FromBody] Employee newEmployee)
+        public override IActionResult Create([FromBody] Employee newEmployee)
         {
             if (_context.Employees.Any(e => e.Email == newEmployee.Email))
             {
                 return BadRequest(new { message = "Email already exists" });
             }
 
+            newEmployee.Password = _passwordHasher.HashPassword(newEmployee, newEmployee.Password);
             _context.Employees.Add(newEmployee);
             _context.SaveChanges();
             return Ok(newEmployee);
         }
 
-        [HttpGet] //get
-        public IActionResult GetAll()
-        {
-            var employees = _context.Employees.ToList();
-            return Ok(employees);
-        }
-
-        [HttpGet("{id}")] //get
-        public IActionResult GetById(int id)
-        {
-            var employee_ = _context.Employees.Find(id);
-            if (employee_ == null)
-            {
-                return NotFound(new { message = "Employee not found" });
-            }
-
-            return Ok(employee_);
-        }
-
         [HttpPut("{id}")] //put
-        public IActionResult Update(int id, [FromBody] Employee updatedEmployee)
+        public override IActionResult Update(int id, [FromBody] Employee updatedEmployee)
         {
             var employee_ = _context.Employees.Find(id);
             if (employee_ == null)
@@ -84,23 +68,12 @@ namespace CalendifyWebAppAPI.Controllers
             employee_.Name = updatedEmployee.Name;
             employee_.Email = updatedEmployee.Email;
             employee_.Role = updatedEmployee.Role;
-            employee_.Password = updatedEmployee.Password;
+            if (!string.IsNullOrEmpty(updatedEmployee.Password))
+            {
+                employee_.Password = _passwordHasher.HashPassword(employee_, updatedEmployee.Password);
+            }
             _context.SaveChanges();
             return Ok(employee_);
-        }
-
-        [HttpDelete("{id}")] //delete
-        public IActionResult Delete(int id)
-        {
-            var employee_ = _context.Employees.Find(id);
-            if (employee_ == null)
-            {
-                return NotFound(new { message = "Employee not found" });
-            }
-
-            _context.Employees.Remove(employee_);
-            _context.SaveChanges();
-            return Ok(new { message = "Employee deleted" });
         }
 
         [HttpGet("email/{email}")] //get
