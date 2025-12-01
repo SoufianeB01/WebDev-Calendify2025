@@ -37,3 +37,4 @@ pnpm-debug.log*
 .idea/
 *.suo
 *.user
+.github/workflows/ci.yml
