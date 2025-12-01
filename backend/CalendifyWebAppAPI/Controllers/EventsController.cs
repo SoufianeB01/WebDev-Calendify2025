@@ -32,7 +32,7 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpPost] // admin create
-        public override IActionResult Create([FromBody] EventCreateRequest req)
+        public IActionResult Create([FromBody] EventCreateRequest req)
         {
             if (!IsAdmin())
             {
@@ -73,7 +73,7 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpPut("{id}")] // admin update
-        public override IActionResult Update(int id, [FromBody] EventUpdateRequest updated)
+        public IActionResult Update(int id, [FromBody] EventUpdateRequest updated)
         {
             if (!IsAdmin())
             {
