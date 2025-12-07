@@ -1,6 +1,7 @@
 using CalendifyWebAppAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,9 @@ builder.Services.AddCors(o =>
         .AllowAnyMethod()
         .AllowCredentials());
 });
+
+// Register password hasher for Employee
+builder.Services.AddScoped<IPasswordHasher<CalendifyWebAppAPI.Models.Employee>, PasswordHasher<CalendifyWebAppAPI.Models.Employee>>();
 
 var app = builder.Build();
 
