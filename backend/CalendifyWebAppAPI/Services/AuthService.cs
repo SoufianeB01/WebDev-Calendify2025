@@ -4,6 +4,7 @@ using CalendifyWebAppAPI.Data;
 using CalendifyWebAppAPI.Models;
 using CalendifyWebAppAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace CalendifyWebAppAPI.Services
 {
@@ -20,24 +21,20 @@ namespace CalendifyWebAppAPI.Services
 
         public async Task<(bool success, string error, Employee? employee, bool isAdmin)> ValidateCredentialsAsync(string email, string password)
         {
-            // Simple async facade
-            return await Task.Run(() =>
+            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Email == email);
+            if (employee == null)
             {
-                var employee = _context.Employees.FirstOrDefault(e => e.Email == email);
-                if (employee == null)
-                {
-                    return (false, "Employee not found", null, false);
-                }
+                return (false, "Employee not found", null, false);
+            }
 
-                var verifyResult = _passwordHasher.VerifyHashedPassword(employee, employee.Password, password);
-                if (verifyResult == PasswordVerificationResult.Failed)
-                {
-                    return (false, "Incorrect password", null, false);
-                }
+            var verifyResult = _passwordHasher.VerifyHashedPassword(employee, employee.Password, password);
+            if (verifyResult == PasswordVerificationResult.Failed)
+            {
+                return (false, "Incorrect password", null, false);
+            }
 
-                var isAdmin = _context.Admins.Any(a => a.UserId == employee.UserId);
-                return (true, string.Empty, employee, isAdmin);
-            });
+            var isAdmin = await _context.Admins.AnyAsync(a => a.UserId == employee.UserId);
+            return (true, string.Empty, employee, isAdmin);
         }
 
         public string HashPassword(Employee employee, string password)

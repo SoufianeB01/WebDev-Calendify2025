@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using CalendifyWebAppAPI.Data;
 using CalendifyWebAppAPI.Models;
-using CalendifyWebAppAPI.Models.DTOs;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using CalendifyWebAppAPI.Services.Interfaces;
 
 namespace CalendifyWebAppAPI.Controllers
 {
@@ -10,121 +11,133 @@ namespace CalendifyWebAppAPI.Controllers
     [Route("api/[controller]")]
     public class EventsController : GenericCrudController<Event, int>
     {
-        public EventsController(AppDbContext context) : base(context) { }
+        private readonly IEventService _eventService;
 
-        private bool IsAdmin() => HttpContext.Session.GetString("IsLoggedIn") == "true" && HttpContext.Session.GetString("Role") == "Admin";
-
-        [HttpGet] // public read with details
-        public override IActionResult GetAll()
+        public EventsController(AppDbContext context, IEventService eventService) : base(context)
         {
-            var events = _context.Events.AsQueryable().ToList();
-            var result = events.Select(e => BuildDetails(e.EventId)).ToList();
+            _eventService = eventService;
+        }
+
+        private bool IsAdmin()
+        {
+            var uid = HttpContext.Session.GetInt32("UserId");
+            var role = HttpContext.Session.GetString("UserRole");
+            return uid != null && role == "Admin";
+        }
+
+        public override async Task<IActionResult> GetAll()
+        {
+            var events = await _eventService.GetAllAsync();
+
+            var detailsTasks = events.Select(async ev =>
+            {
+                var attendees = await (from p in _context.EventParticipations
+                                       join emp in _context.Employees on p.UserId equals emp.UserId
+                                       where p.EventId == ev.EventId
+                                       select new { emp.UserId, emp.Name, emp.Email }).ToListAsync();
+
+                var reviews = await _context.EventReviews
+                    .Where(r => r.EventId == ev.EventId)
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => new { r.ReviewId, r.UserId, r.Rating, r.Comment, r.CreatedAt })
+                    .ToListAsync();
+
+                return new
+                {
+                    ev.EventId,
+                    ev.Title,
+                    ev.Description,
+                    ev.EventDate,
+                    ev.StartTime,
+                    ev.EndTime,
+                    ev.Location,
+                    ev.CreatedBy,
+                    Attendees = attendees,
+                    Reviews = reviews
+                };
+            });
+
+            var result = await Task.WhenAll(detailsTasks);
             return Ok(result);
         }
 
-        [HttpGet("{id}")]
-        public override IActionResult GetById([FromRoute] int id)
+        public override async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var exists = _context.Events.Find(id);
-            if (exists == null) return NotFound();
-            var dto = BuildDetails(id);
-            return Ok(dto);
+            var ev = await _eventService.GetByIdAsync(id);
+            if (ev == null) return NotFound();
+
+            var attendees = await (from p in _context.EventParticipations
+                                   join emp in _context.Employees on p.UserId equals emp.UserId
+                                   where p.EventId == id
+                                   select new { emp.UserId, emp.Name, emp.Email }).ToListAsync();
+
+            var reviews = await _context.EventReviews
+                .Where(r => r.EventId == id)
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => new { r.ReviewId, r.UserId, r.Rating, r.Comment, r.CreatedAt })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                ev.EventId,
+                ev.Title,
+                ev.Description,
+                ev.EventDate,
+                ev.StartTime,
+                ev.EndTime,
+                ev.Location,
+                ev.CreatedBy,
+                Attendees = attendees,
+                Reviews = reviews
+            });
         }
 
-        [HttpPost] // admin create
-        public IActionResult Create([FromBody] EventCreateRequest req)
+        [HttpPost]
+        public override async Task<IActionResult> Create([Bind("Title,Description,EventDate,StartTime,EndTime,Location,CreatedBy")] Event req)
         {
-            if (!IsAdmin())
-            {
-                return Unauthorized(new { message = "Admin privileges required" });
-            }
+            if (!IsAdmin()) return Unauthorized(new { message = "Admin privileges required" });
 
-            // Check if user exists
-            var user = _context.Employees.Find(req.CreatedBy);
-            if (user == null)
-            {
-                return NotFound(new { message = "User not found" });
-            }
+            var user = await _context.Employees.FindAsync(req.CreatedBy);
+            if (user == null) return NotFound(new { message = "User not found" });
 
-            var ev = new Event
-            {
-                Title = req.Title,
-                Description = req.Description,
-                EventDate = DateTime.SpecifyKind(req.EventDate, DateTimeKind.Utc),
-                StartTime = req.StartTime,
-                EndTime = req.EndTime,
-                Location = req.Location,
-                CreatedBy = req.CreatedBy
-            };
+            var (success, error, ev) = await _eventService.CreateAsync(req);
+            if (!success) return BadRequest(new { message = error });
 
-            _context.Events.Add(ev);
-            _context.SaveChanges();
             return Ok(ev);
         }
 
-        [HttpGet("user/{userId}")] //get
-        public IActionResult GetByUserId(int userId)
+        [HttpPut("{id}")]
+        public override async Task<IActionResult> Update(int id, [Bind("Title,Description,EventDate,StartTime,EndTime,Location,CreatedBy")] Event updated)
         {
-            var events = _context.Events
-                .Where(e => e.CreatedBy == userId)
-                .OrderBy(e => e.EventDate)
-                .ToList();
-            return Ok(events);
+            if (!IsAdmin()) return Unauthorized(new { message = "Admin privileges required" });
+
+            var user = await _context.Employees.FindAsync(updated.CreatedBy);
+            if (user == null) return NotFound(new { message = "User not found" });
+
+            updated.EventId = id;
+            var (success, error, ev) = await _eventService.UpdateAsync(updated);
+            if (!success) return BadRequest(new { message = error });
+
+            return Ok(ev);
         }
 
-        [HttpPut("{id}")] // admin update
-        public IActionResult Update(int id, [FromBody] EventUpdateRequest updated)
+        public override async Task<IActionResult> Delete([FromRoute] int id)
         {
-            if (!IsAdmin())
-            {
-                return Unauthorized(new { message = "Admin privileges required" });
-            }
+            if (!IsAdmin()) return Unauthorized(new { message = "Admin privileges required" });
 
-            var event_ = _context.Events.Find(id);
-            if (event_ == null)
-            {
-                return NotFound(new { message = "Event not found" });
-            }
+            var (success, error) = await _eventService.DeleteAsync(id);
+            if (!success) return NotFound(new { message = error });
 
-            // Check if user exists
-            var user = _context.Employees.Find(updated.CreatedBy);
-            if (user == null)
-            {
-                return NotFound(new { message = "User not found" });
-            }
-
-            event_.Title = updated.Title;
-            event_.Description = updated.Description;
-            event_.EventDate = DateTime.SpecifyKind(updated.EventDate, DateTimeKind.Utc);
-            event_.StartTime = updated.StartTime;
-            event_.EndTime = updated.EndTime;
-            event_.Location = updated.Location;
-            event_.CreatedBy = updated.CreatedBy;
-            _context.SaveChanges();
-            return Ok(event_);
-        }
-
-        [HttpDelete("{id}")] // admin delete
-        public override IActionResult Delete([FromRoute] int id)
-        {
-            if (!IsAdmin())
-            {
-                return Unauthorized(new { message = "Admin privileges required" });
-            }
-
-            var existing = _context.Events.Find(id);
-            if (existing == null) return NotFound();
-            _context.Events.Remove(existing);
-            _context.SaveChanges();
             return Ok(new { message = "Deleted" });
         }
 
         [HttpPost("{id}/reviews")]
-        public IActionResult AddReview([FromRoute] int id, [FromBody] EventReviewCreateRequest req)
+        public async Task<IActionResult> AddReview([FromRoute] int id, [FromBody] EventReview req)
         {
-            var ev = _context.Events.Find(id);
+            var ev = await _context.Events.FindAsync(id);
             if (ev == null) return NotFound(new { message = "Event not found" });
-            var user = _context.Employees.Find(req.UserId);
+
+            var user = await _context.Employees.FindAsync(req.UserId);
             if (user == null) return NotFound(new { message = "User not found" });
 
             var review = new EventReview
@@ -135,48 +148,10 @@ namespace CalendifyWebAppAPI.Controllers
                 Comment = req.Comment,
                 CreatedAt = DateTime.UtcNow
             };
-            _context.EventReviews.Add(review);
-            _context.SaveChanges();
+
+            await _context.EventReviews.AddAsync(review);
+            await _context.SaveChangesAsync();
             return Ok(review);
-        }
-
-        private EventDetailsResponse BuildDetails(int eventId)
-        {
-            var ev = _context.Events.First(e => e.EventId == eventId);
-            var attendees = (from p in _context.EventParticipations
-                             join emp in _context.Employees on p.UserId equals emp.UserId
-                             where p.EventId == eventId
-                             select new EventAttendeeDto
-                             {
-                                 UserId = emp.UserId,
-                                 Name = emp.Name,
-                                 Email = emp.Email
-                             }).ToList();
-            var reviews = _context.EventReviews
-                .Where(r => r.EventId == eventId)
-                .OrderByDescending(r => r.CreatedAt)
-                .Select(r => new EventReviewDto
-                {
-                    ReviewId = r.ReviewId,
-                    UserId = r.UserId,
-                    Rating = r.Rating,
-                    Comment = r.Comment,
-                    CreatedAt = r.CreatedAt
-                }).ToList();
-
-            return new EventDetailsResponse
-            {
-                EventId = ev.EventId,
-                Title = ev.Title,
-                Description = ev.Description,
-                EventDate = ev.EventDate,
-                StartTime = ev.StartTime,
-                EndTime = ev.EndTime,
-                Location = ev.Location,
-                CreatedBy = ev.CreatedBy,
-                Attendees = attendees,
-                Reviews = reviews
-            };
         }
     }
 }

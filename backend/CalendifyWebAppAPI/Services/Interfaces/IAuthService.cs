@@ -1,5 +1,5 @@
-using CalendifyWebAppAPI.Models;
 using System.Threading.Tasks;
+using CalendifyWebAppAPI.Models;
 
 namespace CalendifyWebAppAPI.Services.Interfaces
 {

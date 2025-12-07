@@ -22,7 +22,6 @@ namespace CalendifyWebAppAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Map to lowercase table names (match PostgreSQL tables)
             modelBuilder.Entity<Employee>().ToTable("employees");
             modelBuilder.Entity<Event>().ToTable("events");
             modelBuilder.Entity<Room>().ToTable("rooms");

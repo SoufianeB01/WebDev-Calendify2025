@@ -17,36 +17,35 @@ namespace CalendifyWebAppAPI.Controllers
 		}
 
 		[HttpGet]
-		public virtual IActionResult GetAll()
+		public virtual async Task<IActionResult> GetAll()
 		{
-			var items = Set.ToList();
+			var items = await Set.ToListAsync();
 			return Ok(items);
 		}
 
 		[HttpGet("{id}")]
-		public virtual IActionResult GetById([FromRoute] TKey id)
+		public virtual async Task<IActionResult> GetById([FromRoute] TKey id)
 		{
-			var entity = Set.Find(id);
+			var entity = await Set.FindAsync(id);
 			if (entity == null)
 			{
 				return NotFound();
 			}
-
 			return Ok(entity);
 		}
 
 		[HttpPost]
-		public virtual IActionResult Create([FromBody] TEntity entity)
+		public virtual async Task<IActionResult> Create([FromBody] TEntity entity)
 		{
-			Set.Add(entity);
-			_context.SaveChanges();
+			await Set.AddAsync(entity);
+			await _context.SaveChangesAsync();
 			return Ok(entity);
 		}
 
 		[HttpPut("{id}")]
-		public virtual IActionResult Update([FromRoute] TKey id, [FromBody] TEntity updated)
+		public virtual async Task<IActionResult> Update([FromRoute] TKey id, [FromBody] TEntity updated)
 		{
-			var existing = Set.Find(id);
+			var existing = await Set.FindAsync(id);
 			if (existing == null)
 			{
 				return NotFound();
@@ -67,21 +66,21 @@ namespace CalendifyWebAppAPI.Controllers
 				property.PropertyInfo.SetValue(existing, newValue);
 			}
 
-			_context.SaveChanges();
+			await _context.SaveChangesAsync();
 			return Ok(existing);
 		}
 
 		[HttpDelete("{id}")]
-		public virtual IActionResult Delete([FromRoute] TKey id)
+		public virtual async Task<IActionResult> Delete([FromRoute] TKey id)
 		{
-			var existing = Set.Find(id);
+			var existing = await Set.FindAsync(id);
 			if (existing == null)
 			{
 				return NotFound();
 			}
 
 			Set.Remove(existing);
-			_context.SaveChanges();
+			await _context.SaveChangesAsync();
 			return Ok(new { message = "Deleted" });
 		}
 	}

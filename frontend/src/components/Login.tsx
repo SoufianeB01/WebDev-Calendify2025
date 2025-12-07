@@ -1,5 +1,7 @@
 import React from 'react';
 
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:5143';
+
 interface LoginProps {
   title?: string;
   onSuccess?: () => void;
@@ -11,8 +13,6 @@ interface LoginState {
   loading: boolean;
   error: string | null;
 }
-
-const API_BASE = 'http://localhost:5143';
 
 export default class Login extends React.Component<LoginProps, LoginState> {
   constructor(props: LoginProps) {
@@ -32,7 +32,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
     const { email, password } = this.state;
     this.setState({ loading: true, error: null });
 
-    fetch(`${API_BASE}/api/user/auth`, {
+    fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       mode: 'cors',
       credentials: 'include',
