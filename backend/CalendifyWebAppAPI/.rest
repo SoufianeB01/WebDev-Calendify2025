@@ -77,3 +77,18 @@ Content-Type: application/json
 
 ### Delete event
 DELETE http://localhost:5143/api/events/1
+
+### Seed 3 test users
+POST http://localhost:5143/api/user/seed-test-users
+
+### Login with a seeded user (test1)
+POST http://localhost:5143/api/user/auth
+Content-Type: application/json
+
+{
+  "email": "test1@company.com",
+  "password": "test123"
+}
+
+### Get all employees (check seeded)
+GET http://localhost:5143/api/user
