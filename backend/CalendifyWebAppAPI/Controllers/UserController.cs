@@ -107,7 +107,44 @@ namespace CalendifyWebAppAPI.Controllers
                 role = HttpContext.Session.GetString("UserRole")
             });
         }
+
+        [HttpPost("seed-test-users")]
+        public IActionResult SeedTestUsers()
+        {
+            var seeds = new[]
+            {
+                new { Name = "Test User One",  Email = "test1@company.com", Role = "User",  Password = "test123" },
+                new { Name = "Test User Two",  Email = "test2@company.com", Role = "User",  Password = "test123" },
+                new { Name = "Test User Three",Email = "test3@company.com", Role = "Admin", Password = "test123" },
+            };
+
+            var results = new List<object>();
+
+            foreach (var s in seeds)
+            {
+                var existing = _context.Employees.FirstOrDefault(e => e.Email == s.Email);
+                if (existing != null)
+                {
+                    results.Add(new { email = s.Email, status = "exists", userId = existing.UserId });
+                    continue;
+                }
+
+                var emp = new Employee
+                {
+                    Name = s.Name,
+                    Email = s.Email,
+                    Role = s.Role,
+                    Password = "" // will be hashed below
+                };
+                emp.Password = _passwordHasher.HashPassword(emp, s.Password);
+
+                _context.Employees.Add(emp);
+                _context.SaveChanges();
+
+                results.Add(new { email = s.Email, status = "created", userId = emp.UserId });
+            }
+
+            return Ok(results);
+        }
     }
 }
-
-//
