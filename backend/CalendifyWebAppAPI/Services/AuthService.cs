@@ -20,23 +20,22 @@ namespace CalendifyWebAppAPI.Services
 
         public async Task<(bool success, string error, Employee? employee, bool isAdmin)> ValidateCredentialsAsync(string email, string password)
         {
-            // Simple async facade
             return await Task.Run(() =>
             {
-                var employee = _context.Employees.FirstOrDefault(e => e.Email == email);
-                if (employee == null)
+                var employee_ = _context.Employees.FirstOrDefault(e => e.Email == email);
+                if (employee_ == null)
                 {
                     return (false, "Employee not found", null, false);
                 }
 
-                var verifyResult = _passwordHasher.VerifyHashedPassword(employee, employee.Password, password);
-                if (verifyResult == PasswordVerificationResult.Failed)
+                var verify = _passwordHasher.VerifyHashedPassword(employee_, employee_.Password, password);
+                if (verify == PasswordVerificationResult.Failed)
                 {
                     return (false, "Incorrect password", null, false);
                 }
 
-                var isAdmin = _context.Admins.Any(a => a.UserId == employee.UserId);
-                return (true, string.Empty, employee, isAdmin);
+                var isAdmin = _context.Admins.Any(a => a.UserId == employee_.UserId);
+                return (true, string.Empty, employee_, isAdmin);
             });
         }
 
@@ -52,4 +51,3 @@ namespace CalendifyWebAppAPI.Services
         }
     }
 }
-

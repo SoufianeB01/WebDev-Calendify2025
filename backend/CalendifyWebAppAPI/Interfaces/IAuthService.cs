@@ -10,4 +10,3 @@ namespace CalendifyWebAppAPI.Services.Interfaces
         bool VerifyPassword(Employee employee, string password, string hashedPassword);
     }
 }
-
