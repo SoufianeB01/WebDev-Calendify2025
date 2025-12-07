@@ -1,8 +1,8 @@
-using CalendifyWebAppAPI.Models;
-using CalendifyWebAppAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using CalendifyWebAppAPI.Data;
-using System.Linq;
+using CalendifyWebAppAPI.Services.Interfaces;
+using CalendifyWebAppAPI.Models;
+using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
 namespace CalendifyWebAppAPI.Controllers
 {
@@ -11,67 +11,54 @@ namespace CalendifyWebAppAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly AppDbContext _context;
 
-        public AuthController(IAuthService authService, AppDbContext context)
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
-            _context = context;
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest login)
         {
+            if (string.IsNullOrWhiteSpace(login.Email) || string.IsNullOrWhiteSpace(login.Password))
+                return BadRequest(new { message = "Email and password are required" });
+
             var (success, error, employee, isAdmin) = await _authService.ValidateCredentialsAsync(login.Email, login.Password);
             if (!success || employee == null)
+                return Unauthorized(new { message = error });
+
+            HttpContext.Session.SetInt32("UserId", employee.UserId);
+            HttpContext.Session.SetString("UserEmail", employee.Email);
+            HttpContext.Session.SetString("UserRole", isAdmin ? "Admin" : employee.Role);
+
+            return Ok(new
             {
-                return BadRequest(new { message = error });
-            }
-
-            // Register session
-            HttpContext.Session.SetString("IsLoggedIn", "true");
-            HttpContext.Session.SetString("UserId", employee.UserId.ToString());
-            HttpContext.Session.SetString("UserName", employee.Name ?? employee.Email);
-            HttpContext.Session.SetString("Role", isAdmin ? "Admin" : "User");
-
-            return Ok(new { message = "Login successful", name = employee.Name, role = isAdmin ? "Admin" : "User" });
+                message = "Login successful",
+                userId = employee.UserId,
+                email = employee.Email,
+                role = isAdmin ? "Admin" : employee.Role
+            });
         }
 
-        [HttpPost("register")]
-        public IActionResult Register([FromBody] Employee newEmployee)
+        [HttpGet("me")]
+        public IActionResult Me()
         {
-            if (_context.Employees.Any(e => e.Email == newEmployee.Email))
+            var id = HttpContext.Session.GetInt32("UserId");
+            if (!id.HasValue)
+                return Unauthorized(new { message = "No active session" });
+
+            return Ok(new
             {
-                return BadRequest(new { message = "Email already exists" });
-            }
-
-            // Default to User role if not provided
-            if (string.IsNullOrWhiteSpace(newEmployee.Role))
-            {
-                newEmployee.Role = "User";
-            }
-
-            newEmployee.Password = _authService.HashPassword(newEmployee, newEmployee.Password);
-            _context.Employees.Add(newEmployee);
-            _context.SaveChanges();
-            return Ok(new { message = "Registered", userId = newEmployee.UserId, email = newEmployee.Email, role = newEmployee.Role });
-        }
-
-        [HttpPost("logout")]
-        public IActionResult Logout()
-        {
-            HttpContext.Session.Clear();
-            return Ok(new { message = "Logged out" });
-        }
-
-        [HttpGet("session")]
-        public IActionResult SessionStatus()
-        {
-            var isLoggedIn = HttpContext.Session.GetString("IsLoggedIn") == "true";
-            var name = HttpContext.Session.GetString("UserName") ?? string.Empty;
-            var role = HttpContext.Session.GetString("Role") ?? string.Empty;
-            return Ok(new { isLoggedIn, name, role });
+                userId = id.Value,
+                email = HttpContext.Session.GetString("UserEmail"),
+                role = HttpContext.Session.GetString("UserRole")
+            });
         }
     }
-}
 
+    public class LoginRequest
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+}

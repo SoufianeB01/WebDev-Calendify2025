@@ -32,7 +32,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
     const { email, password } = this.state;
     this.setState({ loading: true, error: null });
 
-    fetch(`${API_BASE}/api/user/auth`, {
+    fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       mode: 'cors',
       credentials: 'include',
@@ -58,7 +58,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
       })
       .catch(err => {
         this.setState({
-          error: err.message ? `Network/CORS error: ${err.message}` : 'Network/CORS error',
+          error: err.message ? `Server error: ${err.message}` : 'Server error',
           loading: false,
         });
       });
