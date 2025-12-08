@@ -1,42 +1,40 @@
 import React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/_auth/office-attendance/')({
+export const Route = createFileRoute('/_auth/attendance/')({
   component: RouteComponent,
 })
 
 interface State {
-  records: Array<any>
+  attendance: Array<any>
   loading: boolean
   error: string | null
 }
 
 const API_BASE = 'http://localhost:5143'
 
-class OfficeAttendancePage extends React.Component<{}, State> {
-  state: State = { records: [], loading: true, error: null }
+class AttendancePage extends React.Component<{}, State> {
+  state: State = { attendance: [], loading: true, error: null }
 
   componentDidMount() {
     fetch(`${API_BASE}/api/attendance`, { credentials: 'include' })
-      .then(res =>
-        res.json().then(body => ({ ok: res.ok, body })).catch(() => ({ ok: res.ok, body: null })),
-      )
+      .then(res => res.json().then(body => ({ ok: res.ok, body })).catch(() => ({ ok: res.ok, body: null })))
       .then(({ ok, body }) => {
         if (!ok) {
-          this.setState({ error: body?.message || 'Failed to load office attendance', loading: false })
+          this.setState({ error: body?.message || 'Failed to load attendance', loading: false })
           return
         }
-        this.setState({ records: body, loading: false })
+        this.setState({ attendance: body, loading: false })
       })
       .catch(e => this.setState({ error: e.message, loading: false }))
   }
 
   render() {
-    const { loading, error, records } = this.state
+    const { loading, error, attendance } = this.state
 
     return (
       <div className="p-6">
-        <h1 className="text-2xl font-semibold text-teal-700 mb-6">Office Attendance</h1>
+        <h1 className="text-2xl font-semibold text-teal-700 mb-6">Attendance</h1>
 
         {loading && <div>Loading...</div>}
         {error && <div className="text-red-600">{error}</div>}
@@ -52,12 +50,12 @@ class OfficeAttendancePage extends React.Component<{}, State> {
               </tr>
             </thead>
             <tbody>
-              {records.map((r: any) => (
-                <tr key={r.attendanceId}>
-                  <td className="p-2 border">{r.attendanceId}</td>
-                  <td className="p-2 border">{r.userId}</td>
-                  <td className="p-2 border">{r.date}</td>
-                  <td className="p-2 border">{r.status}</td>
+              {attendance.map((a: any) => (
+                <tr key={a.attendanceId}>
+                  <td className="p-2 border">{a.attendanceId}</td>
+                  <td className="p-2 border">{a.userId}</td>
+                  <td className="p-2 border">{a.date}</td>
+                  <td className="p-2 border">{a.status}</td>
                 </tr>
               ))}
             </tbody>
@@ -69,5 +67,5 @@ class OfficeAttendancePage extends React.Component<{}, State> {
 }
 
 function RouteComponent() {
-  return <OfficeAttendancePage />
+  return <AttendancePage />
 }

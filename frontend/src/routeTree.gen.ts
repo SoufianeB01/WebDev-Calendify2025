@@ -20,6 +20,7 @@ import { Route as AuthRoomsIndexRouteImport } from './routes/_auth/rooms/index'
 import { Route as AuthOfficeAttendanceIndexRouteImport } from './routes/_auth/office-attendance/index'
 import { Route as AuthEventsIndexRouteImport } from './routes/_auth/events/index'
 import { Route as AuthDashboardIndexRouteImport } from './routes/_auth/dashboard/index'
+import { Route as AuthAttendanceIndexRouteImport } from './routes/_auth/attendance/index'
 import { Route as AuthAdminIndexRouteImport } from './routes/_auth/admin/index'
 
 const UnauthRouteRoute = UnauthRouteRouteImport.update({
@@ -78,6 +79,11 @@ const AuthDashboardIndexRoute = AuthDashboardIndexRouteImport.update({
   path: '/dashboard/',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const AuthAttendanceIndexRoute = AuthAttendanceIndexRouteImport.update({
+  id: '/attendance/',
+  path: '/attendance/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
 const AuthAdminIndexRoute = AuthAdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
@@ -87,6 +93,7 @@ const AuthAdminIndexRoute = AuthAdminIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AuthAdminIndexRoute
+  '/attendance': typeof AuthAttendanceIndexRoute
   '/dashboard': typeof AuthDashboardIndexRoute
   '/events': typeof AuthEventsIndexRoute
   '/office-attendance': typeof AuthOfficeAttendanceIndexRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AuthAdminIndexRoute
+  '/attendance': typeof AuthAttendanceIndexRoute
   '/dashboard': typeof AuthDashboardIndexRoute
   '/events': typeof AuthEventsIndexRoute
   '/office-attendance': typeof AuthOfficeAttendanceIndexRoute
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_unauth': typeof UnauthRouteRouteWithChildren
   '/_auth/admin/': typeof AuthAdminIndexRoute
+  '/_auth/attendance/': typeof AuthAttendanceIndexRoute
   '/_auth/dashboard/': typeof AuthDashboardIndexRoute
   '/_auth/events/': typeof AuthEventsIndexRoute
   '/_auth/office-attendance/': typeof AuthOfficeAttendanceIndexRoute
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/attendance'
     | '/dashboard'
     | '/events'
     | '/office-attendance'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/attendance'
     | '/dashboard'
     | '/events'
     | '/office-attendance'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/_unauth'
     | '/_auth/admin/'
+    | '/_auth/attendance/'
     | '/_auth/dashboard/'
     | '/_auth/events/'
     | '/_auth/office-attendance/'
@@ -249,6 +261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthDashboardIndexRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/_auth/attendance/': {
+      id: '/_auth/attendance/'
+      path: '/attendance'
+      fullPath: '/attendance'
+      preLoaderRoute: typeof AuthAttendanceIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
     '/_auth/admin/': {
       id: '/_auth/admin/'
       path: '/admin'
@@ -261,6 +280,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthRouteRouteChildren {
   AuthAdminIndexRoute: typeof AuthAdminIndexRoute
+  AuthAttendanceIndexRoute: typeof AuthAttendanceIndexRoute
   AuthDashboardIndexRoute: typeof AuthDashboardIndexRoute
   AuthEventsIndexRoute: typeof AuthEventsIndexRoute
   AuthOfficeAttendanceIndexRoute: typeof AuthOfficeAttendanceIndexRoute
@@ -270,6 +290,7 @@ interface AuthRouteRouteChildren {
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthAdminIndexRoute: AuthAdminIndexRoute,
+  AuthAttendanceIndexRoute: AuthAttendanceIndexRoute,
   AuthDashboardIndexRoute: AuthDashboardIndexRoute,
   AuthEventsIndexRoute: AuthEventsIndexRoute,
   AuthOfficeAttendanceIndexRoute: AuthOfficeAttendanceIndexRoute,

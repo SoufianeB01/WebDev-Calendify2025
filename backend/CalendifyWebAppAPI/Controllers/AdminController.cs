@@ -22,7 +22,7 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public  IActionResult GetAll()
         {
             if (!IsAdmin())
             {

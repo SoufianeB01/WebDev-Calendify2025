@@ -7,6 +7,17 @@ Content-Type: application/json
   "password": "1234"
 }
 
+### Create Event (Admin only)
+POST http://localhost:5143/api/events
+Content-Type: application/json
+
+{
+  "title": "Team Meeting",
+  "description": "Discussing project milestones",
+  "eventDate": "2025-12-20T10:00:00",
+  "createdBy": 1
+}
+
 ### Auth - Login (Employee)
 POST http://localhost:5143/api/auth/login
 Content-Type: application/json
