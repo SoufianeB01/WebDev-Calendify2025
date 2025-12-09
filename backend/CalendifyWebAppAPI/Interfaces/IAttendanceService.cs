@@ -1,13 +1,14 @@
 using CalendifyWebAppAPI.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CalendifyWebAppAPI.Services.Interfaces
 {
     public interface IAttendanceService
     {
-        OfficeAttendance AddAttendance(OfficeAttendance attendance);
-        List<OfficeAttendance> GetUserAttendances(int userId);
-        OfficeAttendance? UpdateAttendance(int id, OfficeAttendance updated);
-        bool DeleteAttendance(int id);
+        Task<OfficeAttendance?> AddAttendanceAsync(OfficeAttendance attendance);
+        Task<List<OfficeAttendance>> GetUserAttendancesAsync(int userId);
+        Task<OfficeAttendance?> UpdateAttendanceAsync(int id, OfficeAttendance updated);
+        Task<bool> DeleteAttendanceAsync(int id);
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 using CalendifyWebAppAPI.Services.Interfaces;
 using CalendifyWebAppAPI.Models;
 
@@ -17,42 +18,42 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult Add([FromBody] OfficeAttendance attendance)
+        public async Task<IActionResult> Add([FromBody] OfficeAttendance attendance)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (!userId.HasValue) return Unauthorized();
             if (attendance.UserId != userId.Value) return Unauthorized();
 
-            var added = _service.AddAttendance(attendance);
+            var added = await _service.AddAttendanceAsync(attendance);
             if (added == null) return BadRequest(new { message = "Date occupied" });
             return Ok(added);
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (!userId.HasValue) return Unauthorized();
-            var attendances = _service.GetUserAttendances(userId.Value);
+            var attendances = await _service.GetUserAttendancesAsync(userId.Value);
             return Ok(attendances);
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] OfficeAttendance updated)
+        public async Task<IActionResult> Update(int id, [FromBody] OfficeAttendance updated)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (!userId.HasValue) return Unauthorized();
-            var attendance = _service.UpdateAttendance(id, updated);
+            var attendance = await _service.UpdateAttendanceAsync(id, updated);
             if (attendance == null) return NotFound();
             return Ok(attendance);
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (!userId.HasValue) return Unauthorized();
-            var deleted = _service.DeleteAttendance(id);
+            var deleted = await _service.DeleteAttendanceAsync(id);
             if (!deleted) return NotFound();
             return Ok(new { message = "Deleted" });
         }

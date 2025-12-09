@@ -1,6 +1,7 @@
 using CalendifyWebAppAPI.Models;
 using CalendifyWebAppAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace CalendifyWebAppAPI.Controllers
 {
@@ -22,24 +23,24 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
             if (!IsAdmin())
             {
                 return Unauthorized(new { message = "Admin required" });
             }
-            var admins = _adminService.GetAllAdmins();
+            var admins = await _adminService.GetAllAdminsAsync();
             return Ok(admins);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             if (!IsAdmin())
             {
                 return Unauthorized(new { message = "Admin required" });
             }
-            var admin_ = _adminService.GetAdminById(id);
+            var admin_ = await _adminService.GetAdminByIdAsync(id);
             if (admin_ == null)
             {
                 return NotFound(new { message = "Admin not found" });
@@ -48,13 +49,13 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        public IActionResult GetByUserId(int userId)
+        public async Task<IActionResult> GetByUserId(int userId)
         {
             if (!IsAdmin())
             {
                 return Unauthorized(new { message = "Admin required" });
             }
-            var admin_ = _adminService.GetAdminByUserId(userId);
+            var admin_ = await _adminService.GetAdminByUserIdAsync(userId);
             if (admin_ == null)
             {
                 return NotFound(new { message = "Admin not found" });
@@ -63,13 +64,13 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] Admin admin)
+        public async Task<IActionResult> Create([FromBody] Admin admin)
         {
             if (!IsAdmin())
             {
                 return Unauthorized(new { message = "Admin required" });
             }
-            var result = _adminService.CreateAdmin(admin);
+            var result = await _adminService.CreateAdminAsync(admin);
             if (!result.success)
             {
                 return BadRequest(new { message = result.error });
@@ -78,13 +79,13 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] Admin updated)
+        public async Task<IActionResult> Update(int id, [FromBody] Admin updated)
         {
             if (!IsAdmin())
             {
                 return Unauthorized(new { message = "Admin required" });
             }
-            var result = _adminService.UpdateAdmin(id, updated);
+            var result = await _adminService.UpdateAdminAsync(id, updated);
             if (!result.success)
             {
                 return BadRequest(new { message = result.error });
@@ -93,13 +94,13 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             if (!IsAdmin())
             {
                 return Unauthorized(new { message = "Admin required" });
             }
-            var success = _adminService.DeleteAdmin(id);
+            var success = await _adminService.DeleteAdminAsync(id);
             if (!success)
             {
                 return NotFound(new { message = "Admin not found" });
