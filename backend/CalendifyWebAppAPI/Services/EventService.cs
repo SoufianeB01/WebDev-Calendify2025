@@ -13,9 +13,70 @@ namespace CalendifyWebAppAPI.Services
         private readonly AppDbContext _context;
         public EventService(AppDbContext context) => _context = context;
 
-        public async Task<List<Event>> GetAllEventsAsync() => await _context.Events.ToListAsync();
+        public async Task<List<EventDto>> GetAllEventsAsync()
+        {
+            var events = await _context.Events.ToListAsync();
+            var eventDtos = new List<EventDto>();
 
-        public async Task<Event?> GetEventByIdAsync(int id) => await _context.Events.FirstOrDefaultAsync(e => e.EventId == id);
+            foreach (var ev in events)
+            {
+                var reviews = await _context.EventReviews
+                    .Where(r => r.EventId == ev.EventId)
+                    .ToListAsync();
+
+                var attendees = await _context.EventParticipations
+                    .Where(ep => ep.EventId == ev.EventId)
+                    .Select(ep => ep.UserId)
+                    .Distinct()
+                    .ToListAsync();
+
+                eventDtos.Add(new EventDto
+                {
+                    EventId = ev.EventId,
+                    Title = ev.Title,
+                    Description = ev.Description,
+                    EventDate = ev.EventDate,
+                    StartTime = ev.StartTime,
+                    EndTime = ev.EndTime,
+                    Location = ev.Location,
+                    CreatedBy = ev.CreatedBy,
+                    Reviews = reviews,
+                    Attendees = attendees
+                });
+            }
+
+            return eventDtos;
+        }
+
+        public async Task<EventDto?> GetEventByIdAsync(int id)
+        {
+            var ev = await _context.Events.FirstOrDefaultAsync(e => e.EventId == id);
+            if (ev == null) return null;
+
+            var reviews = await _context.EventReviews
+                .Where(r => r.EventId == ev.EventId)
+                .ToListAsync();
+
+            var attendees = await _context.EventParticipations
+                .Where(ep => ep.EventId == ev.EventId)
+                .Select(ep => ep.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            return new EventDto
+            {
+                EventId = ev.EventId,
+                Title = ev.Title,
+                Description = ev.Description,
+                EventDate = ev.EventDate,
+                StartTime = ev.StartTime,
+                EndTime = ev.EndTime,
+                Location = ev.Location,
+                CreatedBy = ev.CreatedBy,
+                Reviews = reviews,
+                Attendees = attendees
+            };
+        }
 
         public async Task<List<Event>> GetEventsByUserAsync(int userId) =>
             await _context.Events.Where(e => e.CreatedBy == userId).ToListAsync();

@@ -31,7 +31,7 @@ namespace CalendifyWebAppAPI.Controllers
         {
             var events = await _eventService.GetAllEventsAsync();
             if (events == null || events.Count == 0)
-                return Ok(new { message = "No events found", events = new List<Event>() });
+                return Ok(new { message = "No events found", events = new List<EventDto>() });
             return Ok(events);
         }
 
