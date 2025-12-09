@@ -1,5 +1,7 @@
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using CalendifyWebAppAPI.Data;
 using CalendifyWebAppAPI.Models;
 using CalendifyWebAppAPI.Services.Interfaces;
@@ -15,24 +17,24 @@ namespace CalendifyWebAppAPI.Services
             _context = context;
         }
 
-        public OfficeAttendance AddAttendance(OfficeAttendance attendance)
+        public async Task<OfficeAttendance?> AddAttendanceAsync(OfficeAttendance attendance)
         {
-            var exists = _context.OfficeAttendances.FirstOrDefault(a => a.UserId == attendance.UserId && a.Date == attendance.Date);
+            var exists = await _context.OfficeAttendances.FirstOrDefaultAsync(a => a.UserId == attendance.UserId && a.Date == attendance.Date);
             if (exists != null) return null;
 
             _context.OfficeAttendances.Add(attendance);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return attendance;
         }
 
-        public List<OfficeAttendance> GetUserAttendances(int userId)
+        public async Task<List<OfficeAttendance>> GetUserAttendancesAsync(int userId)
         {
-            return _context.OfficeAttendances.Where(a => a.UserId == userId).ToList();
+            return await _context.OfficeAttendances.Where(a => a.UserId == userId).ToListAsync();
         }
 
-        public OfficeAttendance? UpdateAttendance(int id, OfficeAttendance updated)
+        public async Task<OfficeAttendance?> UpdateAttendanceAsync(int id, OfficeAttendance updated)
         {
-            var existing = _context.OfficeAttendances.Find(id);
+            var existing = await _context.OfficeAttendances.FindAsync(id);
             if (existing == null)
             {
                 return null;
@@ -40,17 +42,17 @@ namespace CalendifyWebAppAPI.Services
 
             existing.Date = updated.Date;
             existing.Status = updated.Status;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return existing;
         }
 
-        public bool DeleteAttendance(int id)
+        public async Task<bool> DeleteAttendanceAsync(int id)
         {
-            var existing = _context.OfficeAttendances.Find(id);
+            var existing = await _context.OfficeAttendances.FindAsync(id);
             if (existing == null) return false;
 
             _context.OfficeAttendances.Remove(existing);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return true;
         }
     }

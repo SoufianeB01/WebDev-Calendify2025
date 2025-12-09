@@ -1,5 +1,7 @@
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using CalendifyWebAppAPI.Data;
 using CalendifyWebAppAPI.Models;
 using CalendifyWebAppAPI.Services.Interfaces;
@@ -15,38 +17,38 @@ namespace CalendifyWebAppAPI.Services
             _context = context;
         }
 
-        public RoomBooking BookRoom(RoomBooking booking)
+        public async Task<RoomBooking?> BookRoomAsync(RoomBooking booking)
         {
-            var exists = _context.RoomBookings.FirstOrDefault(r => r.RoomId == booking.RoomId && r.BookingDate == booking.BookingDate && r.StartTime == booking.StartTime);
+            var exists = await _context.RoomBookings.FirstOrDefaultAsync(r => r.RoomId == booking.RoomId && r.BookingDate == booking.BookingDate && r.StartTime == booking.StartTime);
             if (exists != null) return null;
 
             _context.RoomBookings.Add(booking);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return booking;
         }
 
-        public List<RoomBooking> GetUserBookings(int userId)
+        public async Task<List<RoomBooking>> GetUserBookingsAsync(int userId)
         {
-            return _context.RoomBookings.Where(r => r.UserId == userId).ToList();
+            return await _context.RoomBookings.Where(r => r.UserId == userId).ToListAsync();
         }
 
-        public RoomBooking? UpdateBooking(int roomId, int userId, RoomBooking updated)
+        public async Task<RoomBooking?> UpdateBookingAsync(int roomId, int userId, RoomBooking updated)
         {
-            var existing = _context.RoomBookings.Find(roomId, userId, updated.BookingDate, updated.StartTime);
+            var existing = await _context.RoomBookings.FindAsync(roomId, userId, updated.BookingDate, updated.StartTime);
             if (existing == null) return null;
 
             existing.EndTime = updated.EndTime;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return existing;
         }
 
-        public bool DeleteBooking(int roomId, int userId, System.DateTime bookingDate, System.TimeSpan startTime)
+        public async Task<bool> DeleteBookingAsync(int roomId, int userId, System.DateTime bookingDate, System.TimeSpan startTime)
         {
-            var existing = _context.RoomBookings.Find(roomId, userId, bookingDate, startTime);
+            var existing = await _context.RoomBookings.FindAsync(roomId, userId, bookingDate, startTime);
             if (existing == null) return false;
 
             _context.RoomBookings.Remove(existing);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return true;
         }
     }
