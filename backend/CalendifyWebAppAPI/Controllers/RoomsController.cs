@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 using CalendifyWebAppAPI.Data;
 using System.Linq;
 
@@ -12,22 +14,22 @@ namespace CalendifyWebAppAPI.Controllers
         public RoomsController(AppDbContext context) { _context = context; }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var rooms = _context.Rooms.ToList();
+            var rooms = await _context.Rooms.ToListAsync();
             return Ok(rooms);
         }
 
         [HttpGet("available")]
-        public IActionResult GetAvailable([FromQuery] System.DateTime bookingDate, [FromQuery] System.TimeSpan startTime, [FromQuery] System.TimeSpan endTime)
+        public async Task<IActionResult> GetAvailable([FromQuery] System.DateTime bookingDate, [FromQuery] System.TimeSpan startTime, [FromQuery] System.TimeSpan endTime)
         {
-            var occupiedRoomIds = _context.RoomBookings
+            var occupiedRoomIds = await _context.RoomBookings
                 .Where(b => b.BookingDate == bookingDate && b.StartTime < endTime && startTime < b.EndTime)
                 .Select(b => b.RoomId)
                 .Distinct()
-                .ToList();
+                .ToListAsync();
 
-            var available = _context.Rooms.Where(r => !occupiedRoomIds.Contains(r.RoomId)).ToList();
+            var available = await _context.Rooms.Where(r => !occupiedRoomIds.Contains(r.RoomId)).ToListAsync();
             return Ok(available);
         }
     }
