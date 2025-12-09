@@ -2,6 +2,8 @@ using CalendifyWebAppAPI.Data;
 using CalendifyWebAppAPI.Models;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace CalendifyWebAppAPI.Services
 {
@@ -14,49 +16,49 @@ namespace CalendifyWebAppAPI.Services
             _context = context;
         }
 
-        public List<Admin> GetAllAdmins()
+        public async Task<List<Admin>> GetAllAdminsAsync()
         {
-            return _context.Admins.ToList();
+            return await _context.Admins.ToListAsync();
         }
 
-        public Admin? GetAdminById(int id)
+        public async Task<Admin?> GetAdminByIdAsync(int id)
         {
-            return _context.Admins.FirstOrDefault(a => a.AdminId == id);
+            return await _context.Admins.FirstOrDefaultAsync(a => a.AdminId == id);
         }
 
-        public Admin? GetAdminByUserId(int userId)
+        public async Task<Admin?> GetAdminByUserIdAsync(int userId)
         {
-            return _context.Admins.FirstOrDefault(a => a.UserId == userId);
+            return await _context.Admins.FirstOrDefaultAsync(a => a.UserId == userId);
         }
 
-        public (bool success, string error, Admin? admin) CreateAdmin(Admin admin)
+        public async Task<(bool success, string error, Admin? admin)> CreateAdminAsync(Admin admin)
         {
-            if (_context.Admins.Any(a => a.UserId == admin.UserId))
+            if (await _context.Admins.AnyAsync(a => a.UserId == admin.UserId))
                 return (false, "Admin already exists", null);
 
             _context.Admins.Add(admin);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return (true, "", admin);
         }
 
-        public (bool success, string error, Admin? admin) UpdateAdmin(int id, Admin updated)
+        public async Task<(bool success, string error, Admin? admin)> UpdateAdminAsync(int id, Admin updated)
         {
-            var existing = _context.Admins.Find(id);
+            var existing = await _context.Admins.FindAsync(id);
             if (existing == null) return (false, "Admin not found", null);
 
             existing.UserId = updated.UserId;
             existing.Permissions = updated.Permissions;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return (true, "", existing);
         }
 
-        public bool DeleteAdmin(int id)
+        public async Task<bool> DeleteAdminAsync(int id)
         {
-            var existing = _context.Admins.Find(id);
+            var existing = await _context.Admins.FindAsync(id);
             if (existing == null) return false;
 
             _context.Admins.Remove(existing);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return true;
         }
     }
