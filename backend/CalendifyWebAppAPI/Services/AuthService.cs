@@ -37,6 +37,28 @@ namespace CalendifyWebAppAPI.Services
             return (true, string.Empty, employee_, isAdmin);
         }
 
+        public async Task<(bool success, string error, Employee? employee)> RegisterAsync(Employee employee)
+        {
+            if (await _context.Employees.AnyAsync(e => e.Email == employee.Email))
+            {
+                return (false, "Email already exists", null);
+            }
+
+            if (string.IsNullOrWhiteSpace(employee.Password))
+            {
+                return (false, "Password is required", null);
+            }
+
+            var tempEmployee = new Employee { Email = employee.Email };
+            employee.Password = HashPassword(tempEmployee, employee.Password);
+            employee.Role = employee.Role ?? "User";
+
+            _context.Employees.Add(employee);
+            await _context.SaveChangesAsync();
+
+            return (true, string.Empty, employee);
+        }
+
         public string HashPassword(Employee employee, string password)
         {
             return _passwordHasher.HashPassword(employee, password);

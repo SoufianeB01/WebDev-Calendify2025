@@ -40,6 +40,37 @@ namespace CalendifyWebAppAPI.Controllers
             });
         }
 
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+                return BadRequest(new { message = "Email and password are required" });
+
+            if (string.IsNullOrWhiteSpace(request.Name))
+                return BadRequest(new { message = "Name is required" });
+
+            var employee = new Employee
+            {
+                Name = request.Name,
+                Email = request.Email,
+                Password = request.Password,
+                Role = request.Role ?? "User"
+            };
+
+            var (success, error, registeredEmployee) = await _authService.RegisterAsync(employee);
+            if (!success || registeredEmployee == null)
+                return BadRequest(new { message = error });
+
+            return Ok(new
+            {
+                message = "Registration successful",
+                userId = registeredEmployee.UserId,
+                email = registeredEmployee.Email,
+                name = registeredEmployee.Name,
+                role = registeredEmployee.Role
+            });
+        }
+
         [HttpGet("me")]
         public IActionResult Me()
         {
@@ -60,5 +91,13 @@ namespace CalendifyWebAppAPI.Controllers
     {
         public string Email { get; set; }
         public string Password { get; set; }
+    }
+
+    public class RegisterRequest
+    {
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string? Role { get; set; }
     }
 }

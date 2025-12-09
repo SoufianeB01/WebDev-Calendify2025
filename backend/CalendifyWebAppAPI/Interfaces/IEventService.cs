@@ -6,8 +6,8 @@ namespace CalendifyWebAppAPI.Interfaces
 {
     public interface IEventService
     {
-        Task<List<Event>> GetAllEventsAsync();
-        Task<Event?> GetEventByIdAsync(int id);
+        Task<List<EventDto>> GetAllEventsAsync();
+        Task<EventDto?> GetEventByIdAsync(int id);
         Task<List<Event>> GetEventsByUserAsync(int userId);
         Task<Event> CreateEventAsync(Event ev);
         Task<Event?> UpdateEventAsync(int id, Event ev);
