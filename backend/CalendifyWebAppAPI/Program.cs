@@ -72,6 +72,7 @@ builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IRoomBookingService, RoomBookingService>();
 builder.Services.AddScoped<IEventParticipationService, EventParticipationService>();
 builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<AdminService>();
 
 var app = builder.Build();

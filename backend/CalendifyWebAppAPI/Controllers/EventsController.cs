@@ -13,11 +13,13 @@ namespace CalendifyWebAppAPI.Controllers
     {
         private readonly IEventService _eventService;
         private readonly IEventParticipationService _participationService;
+        private readonly IReviewService _reviewService;
 
-        public EventsController(IEventService eventService, IEventParticipationService participationService)
+        public EventsController(IEventService eventService, IEventParticipationService participationService, IReviewService reviewService)
         {
             _eventService = eventService;
             _participationService = participationService;
+            _reviewService = reviewService;
         }
 
         private bool IsAdmin()
@@ -78,34 +80,30 @@ namespace CalendifyWebAppAPI.Controllers
             return Ok(new { message = "Deleted" });
         }
 
-        [HttpGet("{id}/attend")]
-        public async Task<IActionResult> AttendEvent(int id)
+
+        [HttpPost("{id}/reviews")]
+        public async Task<IActionResult> AddReview(int id, [FromBody] EventReview review)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (!userId.HasValue) return Unauthorized();
 
-            var attendance = await _participationService.AttendEventAsync(userId.Value, id);
-            return Ok(attendance);
+            review.EventId = id;
+            review.UserId = userId.Value;
+
+            if (review.Rating < 1 || review.Rating > 5)
+            {
+                return BadRequest(new { message = "Rating must be between 1 and 5" });
+            }
+
+            var addedReview = await _reviewService.AddReviewAsync(review);
+            return Ok(addedReview);
         }
 
-        [HttpGet("{id}/attendees")]
-        public async Task<IActionResult> GetAttendees(int id)
+        [HttpGet("{id}/reviews")]
+        public async Task<IActionResult> GetReviews(int id)
         {
-            var attendees = await _participationService.GetAttendeesAsync(id);
-            if (attendees == null || attendees.Count == 0)
-                return Ok(new { message = "No attendees for this event", attendees = new List<int>() });
-            return Ok(attendees);
-        }
-
-        [HttpDelete("{id}/attend")]
-        public async Task<IActionResult> CancelAttendance(int id)
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (!userId.HasValue) return Unauthorized();
-
-            var canceled = await _participationService.CancelAttendanceAsync(userId.Value, id);
-            if (!canceled) return NotFound();
-            return Ok(new { message = "Canceled" });
+            var reviews = await _reviewService.GetReviewsByEventIdAsync(id);
+            return Ok(reviews);
         }
     }
 }
