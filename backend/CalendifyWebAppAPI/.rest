@@ -1,5 +1,5 @@
-### Login
-POST http://localhost:5143/api/user/auth
+### Auth - Login (Admin)
+POST http://localhost:5143/api/auth/login
 Content-Type: application/json
 
 {
@@ -7,64 +7,161 @@ Content-Type: application/json
   "password": "1234"
 }
 
-### Register
-POST http://localhost:5143/api/user
+### Auth - Login (Employee)
+POST http://localhost:5143/api/auth/login
 Content-Type: application/json
 
 {
-  "name": "New Employee",
   "email": "new.employee@company.com",
-  "role": "User",
   "password": "password123"
 }
 
-### Get all employees
-GET http://localhost:5143/api/user
+### Auth - Me (check session)
+GET http://localhost:5143/api/auth/me
 
-### Get employee by id
-GET http://localhost:5143/api/user/1
+### Admin - Get all admins (Admin only)
+GET http://localhost:5143/api/admin
 
-### Update employee
-PUT http://localhost:5143/api/user/1
+### Admin - Get admin by id
+GET http://localhost:5143/api/admin/1
+
+### Admin - Get admin by userId
+GET http://localhost:5143/api/admin/user/4
+
+### Admin - Create new admin
+POST http://localhost:5143/api/admin
 Content-Type: application/json
 
 {
-  "name": "Updated Name",
-  "email": "updated.employee@company.com",
-  "role": "Admin",
-  "password": "newpassword"
+  "AdminId": 0,
+  "UserId": 2,
+  "Permissions": "Full"
 }
 
-### Delete employee
-DELETE http://localhost:5143/api/user/1
+### Admin - Update admin
+PUT http://localhost:5143/api/admin/1
+Content-Type: application/json
 
-### Create new event
+{
+  "AdminId": 1,
+  "UserId": 2,
+  "Permissions": "Limited"
+}
+
+### Admin - Delete admin
+DELETE http://localhost:5143/api/admin/1
+
+### Events - Create event (Admin)
 POST http://localhost:5143/api/events
 Content-Type: application/json
 
 {
-  "title": "Team Meeting Webdev",
-  "description": "Discuss project progress",
-  "eventDate": "2025-11-02T14:00:00Z",
-  "createdBy": 1
+  "Title": "Team Meeting Webdev",
+  "Description": "Discuss project progress",
+  "EventDate": "2025-12-10T14:00:00Z",
+  "CreatedBy": 4
 }
 
-### Get all events
+### Events - Get all events
 GET http://localhost:5143/api/events
 
-### Get event by id
+### Events - Get event by id
 GET http://localhost:5143/api/events/1
 
-### Update event
+### Events - Get events by user
+GET http://localhost:5143/api/events/user/4
+
+### Events - Update event (Admin)
 PUT http://localhost:5143/api/events/1
 Content-Type: application/json
 
 {
-  "title": "Updated Meeting",
-  "description": "Updated description",
-  "eventDate": "2025-11-02T15:00:00Z",
-  "createdBy": 1
+  "EventId": 1,
+  "Title": "Updated Team Meeting",
+  "Description": "Updated description",
+  "EventDate": "2025-12-10T15:00:00Z",
+  "CreatedBy": 4
 }
 
-### Delete event
+### Events - Delete event (Admin)
 DELETE http://localhost:5143/api/events/1
+
+### Events - Attend event (User)
+GET http://localhost:5143/api/events/1/attend
+
+### Events - Get attendees
+GET http://localhost:5143/api/events/1/attendees
+
+### Events - Cancel attendance
+DELETE http://localhost:5143/api/events/1/attend
+
+### Attendance - Add attendance
+POST http://localhost:5143/api/attendance
+Content-Type: application/json
+
+{
+  "UserId": 4,
+  "Date": "2025-12-07T09:00:00Z",
+  "Status": "Present"
+}
+
+### Attendance - Get all for user
+GET http://localhost:5143/api/attendance
+
+### Attendance - Update attendance
+PUT http://localhost:5143/api/attendance/1
+Content-Type: application/json
+
+{
+  "AttendanceId": 1,
+  "UserId": 4,
+  "Date": "2025-12-07T09:00:00Z",
+  "Status": "Absent"
+}
+
+### Attendance - Delete attendance
+DELETE http://localhost:5143/api/attendance/1
+
+### RoomBooking - Book a room
+POST http://localhost:5143/api/roombooking
+Content-Type: application/json
+
+{
+  "RoomId": 1,
+  "UserId": 4,
+  "BookingDate": "2025-12-08T09:00:00Z",
+  "StartTime": "09:00:00",
+  "EndTime": "10:00:00"
+}
+
+### RoomBooking - Get all bookings
+GET http://localhost:5143/api/roombooking
+
+### RoomBooking - Update booking
+PUT http://localhost:5143/api/roombooking
+Content-Type: application/json
+
+{
+  "RoomId": 1,
+  "UserId": 4,
+  "BookingDate": "2025-12-08T09:00:00Z",
+  "StartTime": "09:00:00",
+  "EndTime": "10:30:00"
+}
+
+### RoomBooking - Delete booking
+DELETE http://localhost:5143/api/roombooking
+Content-Type: application/json
+
+{
+  "RoomId": 1,
+  "UserId": 4,
+  "BookingDate": "2025-12-08T09:00:00Z",
+  "StartTime": "09:00:00"
+}
+
+### Rooms - Get all rooms
+GET http://localhost:5143/api/rooms
+
+### Rooms - Get available rooms
+GET http://localhost:5143/api/rooms/available?bookingDate=2025-12-08&startTime=09:00:00&endTime=10:00:00

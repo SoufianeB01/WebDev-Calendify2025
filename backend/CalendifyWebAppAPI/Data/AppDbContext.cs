@@ -16,6 +16,7 @@ namespace CalendifyWebAppAPI.Data
         public DbSet<Group> Groups { get; set; }
         public DbSet<GroupMembership> GroupMemberships { get; set; }
         public DbSet<Admin> Admins { get; set; }
+        public DbSet<EventReview> EventReviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,6 +43,18 @@ namespace CalendifyWebAppAPI.Data
                 eventParticipation.HasOne<Event>()
                     .WithMany()
                     .HasForeignKey(x => x.EventId);
+            });
+
+            modelBuilder.Entity<EventReview>(review =>
+            {
+                review.ToTable("eventreviews");
+                review.HasKey(x => x.ReviewId);
+                review.HasOne<Event>()
+                    .WithMany()
+                    .HasForeignKey(x => x.EventId);
+                review.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(x => x.UserId);
             });
 
             modelBuilder.Entity<OfficeAttendance>(officeAttendance =>

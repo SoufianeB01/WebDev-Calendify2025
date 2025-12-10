@@ -38,7 +38,7 @@ POST http://localhost:5143/api/user/auth
 Content-Type: application/json
 
 {
-  "email": "user01@test.com",
+  "email": "   ",
   "password": "user123"
 }
 

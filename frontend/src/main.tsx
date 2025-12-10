@@ -1,53 +1,55 @@
-import { StrictMode } from 'react'
-import ReactDOM from 'react-dom/client'
-import { RouterProvider, createRouter } from '@tanstack/react-router'
+import { StrictMode, useState } from 'react';
+import ReactDOM from 'react-dom/client';
+import { RouterProvider, createRouter } from '@tanstack/react-router';
+import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider.tsx';
+import { routeTree } from './routeTree.gen';
+import './styles.css';
+import reportWebVitals from './reportWebVitals.ts';
+import { SidebarProvider } from './components/ui/sidebar.tsx';
+import Login from './components/Login';
 
-import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider.tsx'
-
-// Import the generated route tree
-import { routeTree } from './routeTree.gen'
-
-import './styles.css'
-import reportWebVitals from './reportWebVitals.ts'
-import { SidebarProvider } from './components/ui/sidebar.tsx'
-
-// Create a new router instance
-
-const TanStackQueryProviderContext = TanStackQueryProvider.getContext()
+const TanStackQueryProviderContext = TanStackQueryProvider.getContext();
 const router = createRouter({
   routeTree,
-  context: {
-    ...TanStackQueryProviderContext,
-  },
+  context: { ...TanStackQueryProviderContext },
   defaultPreload: 'intent',
   scrollRestoration: true,
   defaultStructuralSharing: true,
   defaultPreloadStaleTime: 0,
-})
+});
 
-// Register the router instance for type safety
 declare module '@tanstack/react-router' {
   interface Register {
-    router: typeof router
+    router: typeof router;
   }
 }
 
-// Render the app
-const rootElement = document.getElementById('app')
+function AppRoot() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  if (!loggedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Login onSuccess={() => { setLoggedIn(true); router.navigate({ to: '/dashboard' }); }} />
+      </div>
+    );
+  }
+  return (
+    <SidebarProvider>
+      <RouterProvider router={router} />
+    </SidebarProvider>
+  );
+}
+
+const rootElement = document.getElementById('app');
 if (rootElement && !rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement)
+  const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
       <TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
-        <SidebarProvider>
-          <RouterProvider router={router} />
-        </SidebarProvider>
+        <AppRoot />
       </TanStackQueryProvider.Provider>
     </StrictMode>,
-  )
+  );
 }
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals()
+reportWebVitals();
