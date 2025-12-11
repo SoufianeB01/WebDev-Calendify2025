@@ -196,6 +196,14 @@ export function EventCalendar({
                     </div>
                     <div className="flex items-center gap-1 sm:gap-4">
                         <Button
+                            variant="default"
+                            onClick={handleEventCreate}
+                            className="gap-2 bg-primary-foreground text-primary hover:bg-primary-hover-secondary max-sm:text-sm cursor-pointer"
+                        >
+                            <span className="max-sm:hidden">Evenement aanmaken</span>
+                            <span className="sm:hidden">+ Event</span>
+                        </Button>
+                        <Button
                             variant="ghost"
                             size="icon"
                             onClick={handlePrevious}

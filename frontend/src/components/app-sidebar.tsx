@@ -1,6 +1,6 @@
 // import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
-import { CalendarDays, CircleUserIcon, DoorOpen, LayoutDashboard, LogOut, ShieldUser, UserCheck, Users } from "lucide-react";
+import { CalendarDays, CircleUserIcon, DoorOpen, LogOut, ShieldUser, UserCheck, Users } from "lucide-react";
 // import { useState } from "react";
 import { useState } from "react";
 import type { ComponentType } from "react";
@@ -34,11 +34,6 @@ type MenuItem = {
 
 // HACK: Create: translation(s) for sidebar items
 const items: Array<MenuItem> = [
-    {
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: LayoutDashboard,
-    },
     {
         title: "Evenementen",
         url: "/events",
