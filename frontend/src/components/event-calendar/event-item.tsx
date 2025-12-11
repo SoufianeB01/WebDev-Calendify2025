@@ -16,14 +16,6 @@ function formatTimeWithOptionalMinutes(date: Date) {
     return format(date, getMinutes(date) === 0 ? 'HH' : 'HH:mm');
 }
 
-// Ensure the provided base URL has a protocol and no trailing slash
-function normalizeBaseUrl(input?: string) {
-    if (!input)
-        return '';
-    const withProtocol = /^https?:\/\//i.test(input) ? input : `https://${input}`;
-    return withProtocol.replace(/\/+$/, '');
-}
-
 type EventWrapperProps = {
     event: CalendarEvent;
     isFirstDay?: boolean;
@@ -146,15 +138,20 @@ export function EventItem({
         return (
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                 <PopoverTrigger asChild>
-                    <div>
+                    <div
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClick?.(e);
+                        }}
+                    >
                         <EventWrapper
                             event={event}
                             isFirstDay={isFirstDay}
                             isLastDay={isLastDay}
                             isDragging={isDragging}
                             className={cn(
-                                'mt-[var(--event-gap)] items-center text-[10px] sm:text-xs h-12',
-                                popoverOpen && '!bg-brand-primary !text-white',
+                                'mt-(--event-gap) h-(--event-height) items-center text-[10px] sm:text-xs',
+                                popoverOpen && 'ring-2 ring-primary ring-offset-1',
                                 className,
                             )}
                             currentTime={currentTime}
@@ -162,27 +159,35 @@ export function EventItem({
                             onTouchStart={onTouchStart}
                         >
                             {children || (
-                                <span className="flex w-full min-w-0 items-center justify-between">
-                                    <div className="flex flex-col gap-2 w-full">
-                                        <div className="flex flex-row justify-between w-full">
-                                            <span className="truncate">{event.title}</span>
-                                            {!event.allDay && (
-                                                <span className="shrink-0 font-normal opacity-70 sm:text-[11px]">
-                                                    {formatTimeWithOptionalMinutes(displayStart)}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
+                                <span className="flex w-full min-w-0 items-center gap-1">
+                                    <span className="min-w-0 flex-1 truncate">{event.title}</span>
+                                    {!event.allDay && (
+                                        <span className="shrink-0 font-normal opacity-70 text-[10px] sm:text-[11px]">
+                                            {formatTimeWithOptionalMinutes(displayStart)}
+                                        </span>
+                                    )}
                                 </span>
                             )}
                         </EventWrapper>
                     </div>
                 </PopoverTrigger>
-                <PopoverContent align="start" side="bottom" className="w-80 rounded-lg p-4 ">
-                    <div className="flex flex-col">
+                <PopoverContent
+                    align="start"
+                    side="bottom"
+                    className="w-80 rounded-lg p-4"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                >
+                    <div className="flex flex-col gap-2">
                         <div className="font-semibold text-lg">{event.title}</div>
+                        <div className="text-sm opacity-70">
+                            {event.allDay ? (
+                                'All day'
+                            ) : (
+                                `${formatTimeWithOptionalMinutes(displayStart)} - ${formatTimeWithOptionalMinutes(displayEnd)}`
+                            )}
+                        </div>
                         {event.description && (
-                            <div className="text-sm mb-1 opacity-90">{event.description}</div>
+                            <div className="text-sm opacity-90">{event.description}</div>
                         )}
                     </div>
                 </PopoverContent>
@@ -194,15 +199,20 @@ export function EventItem({
         return (
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                 <PopoverTrigger asChild>
-                    <div>
+                    <div
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClick?.(e);
+                        }}
+                    >
                         <EventWrapper
                             event={event}
                             isFirstDay={isFirstDay}
                             isLastDay={isLastDay}
                             isDragging={isDragging}
                             className={cn(
-                                'mt-[var(--event-gap)] items-center text-[10px] sm:text-xs h-12',
-                                popoverOpen && '!bg-brand-primary !text-white',
+                                'items-start justify-start text-[10px] sm:text-xs',
+                                popoverOpen && 'ring-2 ring-primary ring-offset-1',
                                 className,
                             )}
                             currentTime={currentTime}
@@ -210,37 +220,113 @@ export function EventItem({
                             onTouchStart={onTouchStart}
                         >
                             {children || (
-                                <span className="flex w-full min-w-0 items-center justify-between">
-                                    <div className="flex flex-col gap-2 w-full">
-                                        <div className="flex flex-row justify-between w-full">
-                                            <span className="truncate">{event.title}</span>
-                                            {!event.allDay && (
-                                                <span className="shrink-0 font-normal opacity-70 sm:text-[11px]">
-                                                    {formatTimeWithOptionalMinutes(displayStart)}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </span>
+                                <div className="flex min-h-0 w-full flex-col gap-0.5">
+                                    <span className="line-clamp-2 wrap-break-word font-medium leading-tight">
+                                        {event.title}
+                                    </span>
+                                    {!event.allDay && (
+                                        <span className="shrink-0 text-[10px] opacity-70">
+                                            {formatTimeWithOptionalMinutes(displayStart)}
+                                        </span>
+                                    )}
+                                </div>
                             )}
                         </EventWrapper>
                     </div>
                 </PopoverTrigger>
-                <PopoverContent align="start" side="bottom" className="w-80 rounded-lg p-4 ">
-                    <div className="flex flex-col">
+                <PopoverContent
+                    align="start"
+                    side="bottom"
+                    className="w-80 rounded-lg p-4"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                >
+                    <div className="flex flex-col gap-2">
                         <div className="font-semibold text-lg">{event.title}</div>
+                        <div className="text-sm opacity-70">
+                            {event.allDay ? (
+                                'All day'
+                            ) : (
+                                `${formatTimeWithOptionalMinutes(displayStart)} - ${formatTimeWithOptionalMinutes(displayEnd)}`
+                            )}
+                        </div>
                         {event.description && (
-                            <div className="text-sm mb-1 opacity-90">{event.description}</div>
+                            <div className="text-sm opacity-90">{event.description}</div>
                         )}
                     </div>
                 </PopoverContent>
             </Popover>
         );
     }
+
+    if (view === 'day') {
+        return (
+            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                <PopoverTrigger asChild>
+                    <div
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClick?.(e);
+                        }}
+                    >
+                        <EventWrapper
+                            event={event}
+                            isFirstDay={isFirstDay}
+                            isLastDay={isLastDay}
+                            isDragging={isDragging}
+                            className={cn(
+                                'items-start justify-start text-xs',
+                                popoverOpen && 'ring-2 ring-primary ring-offset-1',
+                                className,
+                            )}
+                            currentTime={currentTime}
+                            onMouseDown={onMouseDown}
+                            onTouchStart={onTouchStart}
+                        >
+                            {children || (
+                                <div className="flex min-h-0 w-full flex-col gap-0.5">
+                                    <span className="line-clamp-2 wrap-break-word font-medium leading-tight">
+                                        {event.title}
+                                    </span>
+                                    {!event.allDay && (
+                                        <span className="shrink-0 text-[10px] opacity-70">
+                                            {formatTimeWithOptionalMinutes(displayStart)} - {formatTimeWithOptionalMinutes(displayEnd)}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                        </EventWrapper>
+                    </div>
+                </PopoverTrigger>
+                <PopoverContent
+                    align="start"
+                    side="bottom"
+                    className="w-80 rounded-lg p-4"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                >
+                    <div className="flex flex-col gap-2">
+                        <div className="font-semibold text-lg">{event.title}</div>
+                        <div className="text-sm opacity-70">
+                            {event.allDay ? (
+                                'All day'
+                            ) : (
+                                `${formatTimeWithOptionalMinutes(displayStart)} - ${formatTimeWithOptionalMinutes(displayEnd)}`
+                            )}
+                        </div>
+                        {event.description && (
+                            <div className="text-sm opacity-90">{event.description}</div>
+                        )}
+                    </div>
+                </PopoverContent>
+            </Popover>
+        );
+    }
+
+    // For agenda view, show a simple card layout
     return (
-        <div
+        <button
+            type="button"
             className={cn(
-                'focus-visible:border-ring focus-visible:ring-ring/50 flex w-full flex-col gap-1 rounded p-2 text-left transition outline-none focus-visible:ring-[3px] data-past-event:line-through data-past-event:opacity-90',
+                'focus-visible:border-ring focus-visible:ring-ring/50 flex w-full flex-col gap-1 rounded p-3 text-left transition outline-none focus-visible:ring-[3px] data-past-event:line-through data-past-event:opacity-70',
                 getEventColorClasses(eventColor),
                 className,
             )}
@@ -249,34 +335,20 @@ export function EventItem({
             onMouseDown={onMouseDown}
             onTouchStart={onTouchStart}
         >
-            <div className="text-sm font-medium">
-                {event.title}
-                {' '}
-                <div className="text-xs opacity-70">
-                    {event.allDay
-                        ? (
-                            <span>All day</span>
-                        )
-                        : event.end
-                            ? (
-                                <span className="uppercase">
-                                    {formatTimeWithOptionalMinutes(displayStart)}
-                                    {' '}
-                                    {' - '}
-                                    {' '}
-                                    {formatTimeWithOptionalMinutes(displayEnd)}
-                                </span>
-                            )
-                            : (
-                                <span className="uppercase">
-                                    {formatTimeWithOptionalMinutes(displayStart)}
-                                </span>
-                            )}
-                </div>
+            <div className="flex items-start justify-between gap-2">
+                <span className="flex-1 text-sm font-medium leading-tight">
+                    {event.title}
+                </span>
+                {!event.allDay && (
+                    <span className="shrink-0 text-xs opacity-70">
+                        {formatTimeWithOptionalMinutes(displayStart)}
+                        {event.end && ` - ${formatTimeWithOptionalMinutes(displayEnd)}`}
+                    </span>
+                )}
             </div>
             {event.description && (
-                <div className="text-xs opacity-90">{event.description}</div>
+                <div className="text-xs opacity-80 line-clamp-2">{event.description}</div>
             )}
-        </div>
+        </button>
     );
 }

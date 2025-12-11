@@ -157,36 +157,36 @@ export function EventCalendar({
             <CalendarDndProvider onEventUpdate={handleEventUpdate}>
                 <div
                     className={cn(
-                        'flex items-center justify-between p-2 sm:p-4',
+                        'flex items-center justify-between p-2 sm:p-4 bg-card/30 border-b border-primary/20',
                         className,
                     )}
                 >
                     <div className="flex flex-col md:flex-row items-start md:items-center">
                         <div className="flex flex-row p-3 gap-3">
                             <div
-                                className="w-16 h-14 rotate-0 opacity-100 rounded-md border flex text-center flex-col bg-[#FFFFFF]"
+                                className="w-16 h-14 rotate-0 opacity-100 rounded-md border border-primary/30 flex text-center flex-col bg-card shadow-sm"
                             >
-                                <div className="bg-[#FAFAFA] font-semibold text-quaternary">
+                                <div className="bg-primary/10 font-semibold text-primary-foreground border-b border-primary/20">
                                     {["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"][currentDate.getMonth()]}
                                 </div>
-                                <div className="text-brand-secondary text-lg font-bold">
+                                <div className="text-primary-foreground text-lg font-bold">
                                     {currentDate.getDate()}
                                 </div>
                             </div>
                             <div>
                                 <h2 className="flex flex-row gap-2">
-                                    <div className="text-xl font-semibold">
+                                    <div className="text-xl font-semibold text-foreground">
                                         {["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"][currentDate.getMonth()]}
                                         {' '}
                                         {currentDate.getFullYear()}
                                     </div>
-                                    <div className="text-xs border-[#D5D7DA]">
-                                        <span className="inline-block px-2 py-0.5 rounded-full border border-[#D5D7DA] text-xs font-medium align-middle mt-1">
+                                    <div className="text-xs">
+                                        <span className="inline-block px-2 py-0.5 rounded-full border border-primary/30 bg-primary/10 text-primary-foreground text-xs font-medium align-middle mt-1">
                                             Week {currentWeek}
                                         </span>
                                     </div>
                                 </h2>
-                                <p className="mt-1 text-text-primary/70 text-base">
+                                <p className="mt-1 text-muted-foreground text-base">
                                     {["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"][currentDate.getMonth()]}
                                     {' '}1, {currentDate.getFullYear()} - {["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"][nextMonth]}
                                     {' '}{daysInMonth}, {nextMonthYear}
