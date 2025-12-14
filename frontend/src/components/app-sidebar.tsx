@@ -127,7 +127,7 @@ export default function AppSidebar() {
                                                 >
                                                     <CircleUserIcon className="size-5! text-popover-foreground" />
                                                     {/* HACK: Create: translation(s) */}
-                                                    <h3 className="text-base">Account bijwerken</h3>
+                                                    <h3 className="text-base">Mijn profiel</h3>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
                                                     className="px-2 py-3 flex items-center gap-2 w-full h-full cursor-pointer"

@@ -17,6 +17,7 @@ import { Route as UnauthPasswordForgotIndexRouteImport } from './routes/_unauth/
 import { Route as UnauthLoginIndexRouteImport } from './routes/_unauth/login/index'
 import { Route as AuthUsersIndexRouteImport } from './routes/_auth/users/index'
 import { Route as AuthRoomsIndexRouteImport } from './routes/_auth/rooms/index'
+import { Route as AuthProfileIndexRouteImport } from './routes/_auth/profile/index'
 import { Route as AuthOfficeAttendanceIndexRouteImport } from './routes/_auth/office-attendance/index'
 import { Route as AuthEventsIndexRouteImport } from './routes/_auth/events/index'
 import { Route as AuthDashboardIndexRouteImport } from './routes/_auth/dashboard/index'
