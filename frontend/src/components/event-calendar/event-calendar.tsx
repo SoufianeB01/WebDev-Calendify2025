@@ -366,7 +366,7 @@ export function EventCalendar({
                         </DialogDescription>
                     </DialogHeader>
                     <form.AppForm>
-                        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                        <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
                             <form.AppField
                                 name="title"
                                 children={(field) => (
