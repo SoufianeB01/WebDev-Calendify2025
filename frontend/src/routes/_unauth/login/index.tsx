@@ -23,15 +23,12 @@ function RouteComponent() {
     const loginMutation = useMutation({
         mutationFn: async (data: { email: string; password: string }) => {
             const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-            const response = await fetch(`${API_BASE}/api/user/auth`, {
+            const response = await fetch(`${API_BASE}/api/auth/login`, {
                 method: 'POST',
                 mode: 'cors',
                 credentials: 'include',
-                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                body: JSON.stringify({
-                    email: data.email,
-                    password: data.password
-                }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: data.email, password: data.password }),
             });
 
             if (!response.ok) {
