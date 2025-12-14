@@ -62,9 +62,9 @@ export function isMultiDayEvent(event: CalendarEvent): boolean {
  * Filter events for a specific day
  */
 export function getEventsForDay(
-    events: CalendarEvent[],
+    events: Array<CalendarEvent>,
     day: Date,
-): CalendarEvent[] {
+): Array<CalendarEvent> {
     return events
         .filter((event) => {
             const eventStart = new Date(event.start);
@@ -76,7 +76,7 @@ export function getEventsForDay(
 /**
  * Sort events with multi-day events first, then by start time
  */
-export function sortEvents(events: CalendarEvent[]): CalendarEvent[] {
+export function sortEvents(events: Array<CalendarEvent>): Array<CalendarEvent> {
     return [...events].sort((a, b) => {
         const aIsMultiDay = isMultiDayEvent(a);
         const bIsMultiDay = isMultiDayEvent(b);
@@ -94,9 +94,9 @@ export function sortEvents(events: CalendarEvent[]): CalendarEvent[] {
  * Get multi-day events that span across a specific day (but don't start on that day)
  */
 export function getSpanningEventsForDay(
-    events: CalendarEvent[],
+    events: Array<CalendarEvent>,
     day: Date,
-): CalendarEvent[] {
+): Array<CalendarEvent> {
     return events.filter((event) => {
         if (!isMultiDayEvent(event))
             return false;
@@ -116,9 +116,9 @@ export function getSpanningEventsForDay(
  * Get all events visible on a specific day (starting, ending, or spanning)
  */
 export function getAllEventsForDay(
-    events: CalendarEvent[],
+    events: Array<CalendarEvent>,
     day: Date,
-): CalendarEvent[] {
+): Array<CalendarEvent> {
     return events.filter((event) => {
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end ?? event.start);
@@ -134,9 +134,9 @@ export function getAllEventsForDay(
  * Get all events for a day (for agenda view)
  */
 export function getAgendaEventsForDay(
-    events: CalendarEvent[],
+    events: Array<CalendarEvent>,
     day: Date,
-): CalendarEvent[] {
+): Array<CalendarEvent> {
     return events
         .filter((event) => {
             const eventStart = new Date(event.start);

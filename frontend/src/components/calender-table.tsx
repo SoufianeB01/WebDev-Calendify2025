@@ -1,5 +1,5 @@
 import { flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from './ui/table';
 import type { Cell, ColumnDef, Row, SortingState } from '@tanstack/react-table';
 
@@ -69,27 +69,15 @@ export function CalendarTableRoot<TData, TValue>({
 }
 
 
-export function CalendarTableHeader() {
-    // Load events from localStorage on mount
-    const loadEvents = (): Array<CalendarEvent> => {
-        try {
-            const stored = localStorage.getItem('events');
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                // Convert date strings back to Date objects
-                return parsed.map((event: any) => ({
-                    ...event,
-                    start: new Date(event.start),
-                    end: event.end ? new Date(event.end) : undefined,
-                }));
-            }
-        } catch (error) {
-            console.error('Failed to load events from localStorage:', error);
-        }
-        return [];
-    };
+export function CalendarTableHeader({ events: externalEvents }: { events?: Array<CalendarEvent> }) {
+    const [events, setEvents] = useState<Array<CalendarEvent>>(externalEvents || []);
 
-    const [events, setEvents] = useState<Array<CalendarEvent>>(loadEvents);
+    // Update events when externalEvents change
+    useEffect(() => {
+        if (externalEvents && externalEvents.length > 0) {
+            setEvents(externalEvents);
+        }
+    }, [externalEvents]);
 
     // Save events to localStorage whenever they change
     const saveEvents = (newEvents: Array<CalendarEvent>) => {
