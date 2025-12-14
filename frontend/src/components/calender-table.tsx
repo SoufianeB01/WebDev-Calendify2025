@@ -70,41 +70,59 @@ export function CalendarTableRoot<TData, TValue>({
 
 
 export function CalendarTableHeader() {
-    const projects: Array<CalendarEvent> = [
-        {
-            id: '7',
-            title: 'Sales Conference',
-            description: 'Discuss about new clients',
-            start: new Date(),
-            end: new Date(new Date().getTime() + 15 * 60000),
-            color: 'rose',
-        },
-    ];
+    // Load events from localStorage on mount
+    const loadEvents = (): Array<CalendarEvent> => {
+        try {
+            const stored = localStorage.getItem('events');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                // Convert date strings back to Date objects
+                return parsed.map((event: any) => ({
+                    ...event,
+                    start: new Date(event.start),
+                    end: event.end ? new Date(event.end) : undefined,
+                }));
+            }
+        } catch (error) {
+            console.error('Failed to load events from localStorage:', error);
+        }
+        return [];
+    };
 
-    const [events, setEvents] = useState<Array<CalendarEvent>>(projects);
+    const [events, setEvents] = useState<Array<CalendarEvent>>(loadEvents);
+
+    // Save events to localStorage whenever they change
+    const saveEvents = (newEvents: Array<CalendarEvent>) => {
+        try {
+            localStorage.setItem('events', JSON.stringify(newEvents));
+            setEvents(newEvents);
+        } catch (error) {
+            console.error('Failed to save events to localStorage:', error);
+        }
+    };
 
     const handleEventAdd = (event: CalendarEvent) => {
-        setEvents([...events, event]);
+        const newEvents = [...events, event];
+        saveEvents(newEvents);
     };
 
     const handleEventUpdate = (updatedEvent: CalendarEvent) => {
-        setEvents(
-            events.map(event =>
-                event.id === updatedEvent.id ? updatedEvent : event,
-            ),
+        const newEvents = events.map(event =>
+            event.id === updatedEvent.id ? updatedEvent : event,
         );
+        saveEvents(newEvents);
     };
 
     return (
         <>
             <EventCalendar
-                events={projects}
+                events={events}
                 onEventAdd={handleEventAdd}
                 onEventUpdate={handleEventUpdate}
             />
         </>
     );
-};
+}
 
 export const CalendarTable = Object.assign(CalendarTableRoot, {
     Header: CalendarTableHeader,

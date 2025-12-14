@@ -1,3 +1,5 @@
+import type { FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import {
     addDays,
     addMonths,
@@ -10,14 +12,28 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import z from 'zod';
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
 import { DropdownMenuShortcut } from '../ui/dropdown-menu';
 import { Button } from '../ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '../ui/dialog';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
+import { useAppForm } from '@/hooks/use-app-form';
 import type {
     CalendarEvent,
     CalendarView,
+    EventColor,
 } from '@/components/event-calendar';
 
 import {
@@ -43,6 +59,7 @@ export type EventCalendarProps = {
 };
 export function EventCalendar({
     events,
+    onEventAdd,
     onEventUpdate,
     className,
     initialView = 'month',
@@ -51,6 +68,44 @@ export function EventCalendar({
     const [view, setView] = useState<CalendarView>(initialView);
     const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+    const form = useAppForm({
+        defaultValues: {
+            title: "",
+            description: "",
+            start: new Date().toISOString().slice(0, 16),
+            end: new Date(new Date().getTime() + 60 * 60000).toISOString().slice(0, 16),
+            allDay: false,
+            color: "sky" as EventColor,
+        },
+        onSubmit: ({ value }) => {
+            const newEvent: CalendarEvent = {
+                id: Date.now().toString(),
+                title: value.title,
+                description: value.description || undefined,
+                start: new Date(value.start),
+                end: new Date(value.end),
+                allDay: value.allDay,
+                color: value.color,
+            };
+
+            onEventAdd?.(newEvent);
+            toast.success("Evenement succesvol aangemaakt");
+            setIsCreateDialogOpen(false);
+            form.reset();
+        },
+        validators: {
+            onSubmit: z.object({
+                title: z.string().min(1, "Titel is verplicht").max(100, "Titel mag maximaal 100 karakters zijn"),
+                description: z.string().max(500, "Beschrijving mag maximaal 500 karakters zijn"),
+                start: z.string().min(1, "Startdatum is verplicht"),
+                end: z.string().min(1, "Einddatum is verplicht"),
+                allDay: z.boolean(),
+                color: z.enum(["sky", "amber", "violet", "rose", "emerald", "orange", "utility-gray"]),
+            }),
+        },
+    });
     // Add keyboard shortcuts for view switching
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -127,12 +182,17 @@ export function EventCalendar({
     };
 
     const handleEventCreate = () => {
-
+        setIsCreateDialogOpen(true);
     };
 
     const handleEventUpdate = (updatedEvent: CalendarEvent) => {
         onEventUpdate?.(updatedEvent);
     };
+
+    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        form.handleSubmit();
+    }
 
     // Use currentDate for dynamic header values
     const oneJanuary = new Date(currentDate.getFullYear(), 0, 1);
@@ -297,6 +357,151 @@ export function EventCalendar({
                     )}
                 </div>
             </CalendarDndProvider>
+
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogContent className="sm:max-w-[525px]">
+                    <DialogHeader>
+                        <DialogTitle>Evenement aanmaken</DialogTitle>
+                        <DialogDescription>
+                            Vul de onderstaande gegevens in om een nieuw evenement aan te maken.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form.AppForm>
+                        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                            <form.AppField
+                                name="title"
+                                children={(field) => (
+                                    <div className="flex flex-col gap-2">
+                                        <Label htmlFor="title" className="text-primary-foreground">Titel *</Label>
+                                        <Input
+                                            id="title"
+                                            value={field.state.value}
+                                            onChange={(e) => field.handleChange(e.target.value)}
+                                            placeholder="Voer de titel in..."
+                                            className="focus-visible:ring-2 focus-visible:ring-primary/50"
+                                        />
+                                        {field.state.meta.errors.length > 0 && (
+                                            <span className="text-sm text-destructive">
+                                                {typeof field.state.meta.errors[0] === 'string' 
+                                                    ? field.state.meta.errors[0] 
+                                                    : field.state.meta.errors[0]?.message || 'Validatiefout'}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                            />
+                            <form.AppField
+                                name="description"
+                                children={(field) => (
+                                    <div className="flex flex-col gap-2">
+                                        <Label htmlFor="description" className="text-primary-foreground">Beschrijving</Label>
+                                        <Textarea
+                                            id="description"
+                                            value={field.state.value}
+                                            onChange={(e) => field.handleChange(e.target.value)}
+                                            placeholder="Voer de beschrijving in..."
+                                            rows={3}
+                                            className="focus-visible:ring-2 focus-visible:ring-primary/50"
+                                        />
+                                        {field.state.meta.errors.length > 0 && (
+                                            <span className="text-sm text-destructive">
+                                                {typeof field.state.meta.errors[0] === 'string' 
+                                                    ? field.state.meta.errors[0] 
+                                                    : field.state.meta.errors[0]?.message || 'Validatiefout'}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                            />
+                            <div className="grid grid-cols-2 gap-4">
+                                <form.AppField
+                                    name="start"
+                                    children={(field) => (
+                                        <div className="flex flex-col gap-2">
+                                            <Label htmlFor="start" className="text-primary-foreground">Startdatum *</Label>
+                                            <Input
+                                                id="start"
+                                                type="datetime-local"
+                                                value={field.state.value}
+                                                onChange={(e) => field.handleChange(e.target.value)}
+                                                className="focus-visible:ring-2 focus-visible:ring-primary/50 scheme-dark"
+                                            />
+                                            {field.state.meta.errors.length > 0 && (
+                                                <span className="text-sm text-destructive">
+                                                    {typeof field.state.meta.errors[0] === 'string' 
+                                                        ? field.state.meta.errors[0] 
+                                                        : field.state.meta.errors[0]?.message || 'Validatiefout'}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                />
+                                <form.AppField
+                                    name="end"
+                                    children={(field) => (
+                                        <div className="flex flex-col gap-2">
+                                            <Label htmlFor="end" className="text-primary-foreground">Einddatum *</Label>
+                                            <Input
+                                                id="end"
+                                                type="datetime-local"
+                                                value={field.state.value}
+                                                onChange={(e) => field.handleChange(e.target.value)}
+                                                className="focus-visible:ring-2 focus-visible:ring-primary/50 scheme-dark"
+                                            />
+                                            {field.state.meta.errors.length > 0 && (
+                                                <span className="text-sm text-destructive">
+                                                    {typeof field.state.meta.errors[0] === 'string' 
+                                                        ? field.state.meta.errors[0] 
+                                                        : field.state.meta.errors[0]?.message || 'Validatiefout'}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                />
+                            </div>
+                            <form.AppField
+                                name="color"
+                                children={(field) => (
+                                    <div className="flex flex-col gap-2">
+                                        <Label htmlFor="color" className="text-primary-foreground">Kleur</Label>
+                                        <select
+                                            id="color"
+                                            value={field.state.value}
+                                            onChange={(e) => field.handleChange(e.target.value as EventColor)}
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
+                                        >
+                                            <option value="sky">Blauw</option>
+                                            <option value="amber">Amber</option>
+                                            <option value="violet">Violet</option>
+                                            <option value="rose">Roze</option>
+                                            <option value="emerald">Groen</option>
+                                            <option value="orange">Oranje</option>
+                                            <option value="utility-gray">Grijs</option>
+                                        </select>
+                                    </div>
+                                )}
+                            />
+                            <DialogFooter>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setIsCreateDialogOpen(false)}
+                                >
+                                    Annuleren
+                                </Button>
+                                <form.Subscribe
+                                    selector={(state) => state.canSubmit}
+                                    children={(canSubmit) => (
+                                        <Button type="submit" disabled={!canSubmit}>
+                                            Aanmaken
+                                        </Button>
+                                    )}
+                                />
+                            </DialogFooter>
+                        </form>
+                    </form.AppForm>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
