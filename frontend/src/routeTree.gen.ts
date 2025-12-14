@@ -22,6 +22,7 @@ import { Route as AuthOfficeAttendanceIndexRouteImport } from './routes/_auth/of
 import { Route as AuthEventsIndexRouteImport } from './routes/_auth/events/index'
 import { Route as AuthDashboardIndexRouteImport } from './routes/_auth/dashboard/index'
 import { Route as AuthAdminIndexRouteImport } from './routes/_auth/admin/index'
+import { Route as AuthEventsEventIdIndexRouteImport } from './routes/_auth/events/$eventId/index'
 
 const UnauthRouteRoute = UnauthRouteRouteImport.update({
   id: '/_unauth',
@@ -63,6 +64,11 @@ const AuthRoomsIndexRoute = AuthRoomsIndexRouteImport.update({
   path: '/rooms/',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const AuthProfileIndexRoute = AuthProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
 const AuthOfficeAttendanceIndexRoute =
   AuthOfficeAttendanceIndexRouteImport.update({
     id: '/office-attendance/',
@@ -74,33 +80,49 @@ const AuthEventsIndexRoute = AuthEventsIndexRouteImport.update({
   path: '/events/',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const AuthDashboardIndexRoute = AuthDashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
 const AuthAdminIndexRoute = AuthAdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthEventsEventIdIndexRoute = AuthEventsEventIdIndexRouteImport.update({
+  id: '/events/$eventId/',
+  path: '/events/$eventId/',
   getParentRoute: () => AuthRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AuthAdminIndexRoute
+  '/dashboard': typeof AuthDashboardIndexRoute
   '/events': typeof AuthEventsIndexRoute
   '/office-attendance': typeof AuthOfficeAttendanceIndexRoute
+  '/profile': typeof AuthProfileIndexRoute
   '/rooms': typeof AuthRoomsIndexRoute
   '/users': typeof AuthUsersIndexRoute
   '/login': typeof UnauthLoginIndexRoute
   '/password-forgot': typeof UnauthPasswordForgotIndexRoute
   '/password-reset': typeof UnauthPasswordResetIndexRoute
+  '/events/$eventId': typeof AuthEventsEventIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AuthAdminIndexRoute
+  '/dashboard': typeof AuthDashboardIndexRoute
   '/events': typeof AuthEventsIndexRoute
   '/office-attendance': typeof AuthOfficeAttendanceIndexRoute
+  '/profile': typeof AuthProfileIndexRoute
   '/rooms': typeof AuthRoomsIndexRoute
   '/users': typeof AuthUsersIndexRoute
   '/login': typeof UnauthLoginIndexRoute
   '/password-forgot': typeof UnauthPasswordForgotIndexRoute
   '/password-reset': typeof UnauthPasswordResetIndexRoute
+  '/events/$eventId': typeof AuthEventsEventIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -108,50 +130,62 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_unauth': typeof UnauthRouteRouteWithChildren
   '/_auth/admin/': typeof AuthAdminIndexRoute
+  '/_auth/dashboard/': typeof AuthDashboardIndexRoute
   '/_auth/events/': typeof AuthEventsIndexRoute
   '/_auth/office-attendance/': typeof AuthOfficeAttendanceIndexRoute
+  '/_auth/profile/': typeof AuthProfileIndexRoute
   '/_auth/rooms/': typeof AuthRoomsIndexRoute
   '/_auth/users/': typeof AuthUsersIndexRoute
   '/_unauth/login/': typeof UnauthLoginIndexRoute
   '/_unauth/password-forgot/': typeof UnauthPasswordForgotIndexRoute
   '/_unauth/password-reset/': typeof UnauthPasswordResetIndexRoute
+  '/_auth/events/$eventId/': typeof AuthEventsEventIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/dashboard'
     | '/events'
     | '/office-attendance'
+    | '/profile'
     | '/rooms'
     | '/users'
     | '/login'
     | '/password-forgot'
     | '/password-reset'
+    | '/events/$eventId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
+    | '/dashboard'
     | '/events'
     | '/office-attendance'
+    | '/profile'
     | '/rooms'
     | '/users'
     | '/login'
     | '/password-forgot'
     | '/password-reset'
+    | '/events/$eventId'
   id:
     | '__root__'
     | '/'
     | '/_auth'
     | '/_unauth'
     | '/_auth/admin/'
+    | '/_auth/dashboard/'
     | '/_auth/events/'
     | '/_auth/office-attendance/'
+    | '/_auth/profile/'
     | '/_auth/rooms/'
     | '/_auth/users/'
     | '/_unauth/login/'
     | '/_unauth/password-forgot/'
     | '/_unauth/password-reset/'
+    | '/_auth/events/$eventId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -218,6 +252,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRoomsIndexRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/_auth/profile/': {
+      id: '/_auth/profile/'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthProfileIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
     '/_auth/office-attendance/': {
       id: '/_auth/office-attendance/'
       path: '/office-attendance'
@@ -232,6 +273,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthEventsIndexRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/_auth/dashboard/': {
+      id: '/_auth/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthDashboardIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
     '/_auth/admin/': {
       id: '/_auth/admin/'
       path: '/admin'
@@ -239,23 +287,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAdminIndexRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/_auth/events/$eventId/': {
+      id: '/_auth/events/$eventId/'
+      path: '/events/$eventId'
+      fullPath: '/events/$eventId'
+      preLoaderRoute: typeof AuthEventsEventIdIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
   }
 }
 
 interface AuthRouteRouteChildren {
   AuthAdminIndexRoute: typeof AuthAdminIndexRoute
+  AuthDashboardIndexRoute: typeof AuthDashboardIndexRoute
   AuthEventsIndexRoute: typeof AuthEventsIndexRoute
   AuthOfficeAttendanceIndexRoute: typeof AuthOfficeAttendanceIndexRoute
+  AuthProfileIndexRoute: typeof AuthProfileIndexRoute
   AuthRoomsIndexRoute: typeof AuthRoomsIndexRoute
   AuthUsersIndexRoute: typeof AuthUsersIndexRoute
+  AuthEventsEventIdIndexRoute: typeof AuthEventsEventIdIndexRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthAdminIndexRoute: AuthAdminIndexRoute,
+  AuthDashboardIndexRoute: AuthDashboardIndexRoute,
   AuthEventsIndexRoute: AuthEventsIndexRoute,
   AuthOfficeAttendanceIndexRoute: AuthOfficeAttendanceIndexRoute,
+  AuthProfileIndexRoute: AuthProfileIndexRoute,
   AuthRoomsIndexRoute: AuthRoomsIndexRoute,
   AuthUsersIndexRoute: AuthUsersIndexRoute,
+  AuthEventsEventIdIndexRoute: AuthEventsEventIdIndexRoute,
 }
 
 const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
