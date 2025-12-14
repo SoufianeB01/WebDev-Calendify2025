@@ -1,4 +1,3 @@
-import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import {
     addDays,
@@ -29,12 +28,12 @@ import {
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { useAppForm } from '@/hooks/use-app-form';
 import type {
     CalendarEvent,
     CalendarView,
     EventColor,
 } from '@/components/event-calendar';
+import { useAppForm } from '@/hooks/use-app-form';
 
 import {
     AgendaDaysToShow,
@@ -382,8 +381,8 @@ export function EventCalendar({
                                         />
                                         {field.state.meta.errors.length > 0 && (
                                             <span className="text-sm text-destructive">
-                                                {typeof field.state.meta.errors[0] === 'string' 
-                                                    ? field.state.meta.errors[0] 
+                                                {typeof field.state.meta.errors[0] === 'string'
+                                                    ? field.state.meta.errors[0]
                                                     : field.state.meta.errors[0]?.message || 'Validatiefout'}
                                             </span>
                                         )}
@@ -405,8 +404,8 @@ export function EventCalendar({
                                         />
                                         {field.state.meta.errors.length > 0 && (
                                             <span className="text-sm text-destructive">
-                                                {typeof field.state.meta.errors[0] === 'string' 
-                                                    ? field.state.meta.errors[0] 
+                                                {typeof field.state.meta.errors[0] === 'string'
+                                                    ? field.state.meta.errors[0]
                                                     : field.state.meta.errors[0]?.message || 'Validatiefout'}
                                             </span>
                                         )}
@@ -428,8 +427,8 @@ export function EventCalendar({
                                             />
                                             {field.state.meta.errors.length > 0 && (
                                                 <span className="text-sm text-destructive">
-                                                    {typeof field.state.meta.errors[0] === 'string' 
-                                                        ? field.state.meta.errors[0] 
+                                                    {typeof field.state.meta.errors[0] === 'string'
+                                                        ? field.state.meta.errors[0]
                                                         : field.state.meta.errors[0]?.message || 'Validatiefout'}
                                                 </span>
                                             )}
@@ -450,8 +449,8 @@ export function EventCalendar({
                                             />
                                             {field.state.meta.errors.length > 0 && (
                                                 <span className="text-sm text-destructive">
-                                                    {typeof field.state.meta.errors[0] === 'string' 
-                                                        ? field.state.meta.errors[0] 
+                                                    {typeof field.state.meta.errors[0] === 'string'
+                                                        ? field.state.meta.errors[0]
                                                         : field.state.meta.errors[0]?.message || 'Validatiefout'}
                                                 </span>
                                             )}
