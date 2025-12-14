@@ -1,9 +1,16 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router';
+import { CalendarTable } from '@/components/calender-table';
 
-export const Route = createFileRoute('/_auth/events/')({
+export const Route = createFileRoute(
+  '/_auth/events/',
+)({
   component: RouteComponent,
-})
+});
 
 function RouteComponent() {
-  return <div>Hello "/_auth/events/"!</div>
+  return (
+    <div className="flex flex-col max-sm:flex-wrap gap-8 justify-start">
+      <CalendarTable.Header />
+    </div>
+  );
 }

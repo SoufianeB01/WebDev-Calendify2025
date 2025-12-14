@@ -14,7 +14,7 @@ import {
     startOfDay,
     startOfWeek,
 } from 'date-fns';
-import { enGB, nl } from 'date-fns/locale';
+import { nl } from 'date-fns/locale';
 import React, { useMemo } from 'react';
 import {
     Popover,
@@ -299,14 +299,14 @@ export function WeekView({
 
     return (
         <div data-slot="week-view" className="flex h-full flex-col">
-            <div className="bg-background/80 border-border/70 sticky top-0 z-30 grid grid-cols-8 border-b backdrop-blur-md">
-                <div className="text-muted-foreground/70 py-2 text-center text-sm">
+            <div className="bg-card/60 border-primary/20 sticky top-0 z-30 grid grid-cols-8 border-b backdrop-blur-md shadow-sm">
+                <div className="text-primary-foreground/80 py-2 text-center text-sm font-medium">
                     <span className="max-[479px]:sr-only">{format(new Date(), 'O')}</span>
                 </div>
                 {days.map(day => (
                     <div
                         key={day.toString()}
-                        className="data-today:text-foreground text-muted-foreground/70 py-2 text-center text-sm data-today:font-medium"
+                        className="data-today:text-primary-foreground data-today:bg-primary/10 text-foreground/70 py-2 text-center text-sm data-today:font-bold transition-colors"
                         data-today={isToday(day) || undefined}
                     >
                         <span className="sm:hidden" aria-hidden="true">
@@ -320,10 +320,10 @@ export function WeekView({
             </div>
 
             {showAllDaySection && (
-                <div className="border-border/70 bg-muted/50 border-b">
+                <div className="border-primary/20 bg-card/30 border-b">
                     <div className="grid grid-cols-8">
-                        <div className="border-border/70 relative border-r">
-                            <span className="text-muted-foreground/70 absolute bottom-0 left-0 h-6 w-16 max-w-full pe-2 text-right text-[10px] sm:pe-4 sm:text-xs">
+                        <div className="border-primary/20 relative border-r">
+                            <span className="text-primary-foreground/80 font-medium absolute bottom-0 left-0 h-6 w-16 max-w-full pe-2 text-right text-[10px] sm:pe-4 sm:text-xs">
                                 Alle dagen
                             </span>
                         </div>
@@ -385,14 +385,14 @@ export function WeekView({
             )}
 
             <div className="grid flex-1 grid-cols-8 overflow-hidden">
-                <div className="border-border/70 grid auto-cols-fr border-r">
+                <div className="border-primary/20 bg-card/20 grid auto-cols-fr border-r">
                     {hours.map((hour, index) => (
                         <div
                             key={hour.toString()}
-                            className="border-border/70 relative min-h-[var(--week-cells-height)] border-b last:border-b-0"
+                            className="border-primary/10 relative min-h-(--week-cells-height) border-b last:border-b-0"
                         >
                             {index > 0 && (
-                                <span className="bg-background text-muted-foreground/70 absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end pe-2 text-[10px] sm:pe-4 sm:text-xs">
+                                <span className="bg-card/80 text-primary-foreground/80 font-medium absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end pe-2 text-[10px] sm:pe-4 sm:text-xs">
                                     {format(hour, 'HH:mm')}
                                 </span>
                             )}
@@ -406,7 +406,7 @@ export function WeekView({
                     return (
                         <div
                             key={day.toString()}
-                            className="border-border/70 relative grid auto-cols-fr border-r last:border-r-0"
+                            className="border-primary/10 bg-card/10 data-today:bg-primary/5 relative grid auto-cols-fr border-r last:border-r-0 hover:bg-card/20 transition-colors"
                             data-today={isToday(day) || undefined}
                         >
                             {/* Current time indicator - only show for today's column */}
@@ -416,8 +416,8 @@ export function WeekView({
                                     style={{ top: `${currentTimePosition}%` }}
                                 >
                                     <div className="relative flex items-center">
-                                        <div className="bg-primary absolute -left-1 h-2 w-2 rounded-full"></div>
-                                        <div className="bg-primary h-[2px] w-full"></div>
+                                        <div className="bg-primary-foreground shadow-lg shadow-primary-foreground/50 absolute -left-1 h-2 w-2 rounded-full"></div>
+                                        <div className="bg-primary-foreground h-0.5 w-full shadow-sm"></div>
                                     </div>
                                 </div>
                             )}
@@ -440,7 +440,7 @@ export function WeekView({
                                 return (
                                     <div
                                         key={hour.toString()}
-                                        className="border-border/70 relative min-h-[var(--week-cells-height)] border-b last:border-b-0"
+                                        className="border-primary/10 relative min-h-(--week-cells-height) border-b last:border-b-0"
                                     >
                                         {/* Stacked events for hours with 2+ events */}
                                         {hasMultipleEvents && (
@@ -454,7 +454,7 @@ export function WeekView({
                                                     return (
                                                         <div
                                                             key={event.id}
-                                                            className="flex-shrink-0"
+                                                            className="shrink-0"
                                                             style={{ height: `${EventHeight}px` }}
                                                         >
                                                             <EventItem
@@ -486,7 +486,8 @@ export function WeekView({
                                                     <Popover modal>
                                                         <PopoverTrigger asChild>
                                                             <Button
-                                                                className="focus-visible:border-ring !bg-primary-foreground focus-visible:ring-ring/50 text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center overflow-hidden px-1 text-left text-sm backdrop-blur-md transition outline-none select-none focus-visible:ring-2 sm:px-2 sm:text-xs"
+                                                                variant="ghost"
+                                                                className="focus-visible:border-ring bg-card/60 border border-primary/20 focus-visible:ring-ring/50 text-primary-foreground hover:text-foreground hover:bg-primary/20 hover:border-primary/40 flex items-center justify-start overflow-hidden rounded px-1 text-left text-sm backdrop-blur-md transition outline-none select-none focus-visible:ring-2 sm:px-2 sm:text-xs"
                                                                 style={{ height: `${EventHeight}px` }}
                                                                 onClick={e => e.stopPropagation()}
                                                             >

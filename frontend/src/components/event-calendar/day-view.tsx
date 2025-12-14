@@ -9,7 +9,7 @@ import {
     isSameDay,
     startOfDay,
 } from 'date-fns';
-import { enGB, nl } from 'date-fns/locale';
+import { nl } from 'date-fns/locale';
 import React, { useMemo } from 'react';
 
 import type { CalendarEvent } from '@/components/event-calendar';
@@ -111,7 +111,7 @@ export function DayView({
         });
 
         // Track columns for overlapping events
-        const columns: Array<{ event: CalendarEvent; end: Date }> = [];
+        const columns: Array<Array<{ event: CalendarEvent; end: Date }>> = [];
 
         sortedEvents.forEach((event) => {
             const eventStart = new Date(event.start);
@@ -136,9 +136,11 @@ export function DayView({
             let placed = false;
 
             while (!placed) {
-                const col = columns[columnIndex] || [];
+                if (!columns[columnIndex]) {
+                    columns[columnIndex] = [];
+                }
+                const col = columns[columnIndex];
                 if (col.length === 0) {
-                    columns[columnIndex] = col;
                     placed = true;
                 }
                 else {
@@ -158,8 +160,7 @@ export function DayView({
             }
 
             // Ensure column is initialized before pushing
-            const currentColumn = columns[columnIndex] || [];
-            columns[columnIndex] = currentColumn;
+            const currentColumn = columns[columnIndex];
             currentColumn.push({ event, end: adjustedEnd });
 
             // First column takes full width, others are indented by 10% and take 90% width
@@ -193,10 +194,10 @@ export function DayView({
     return (
         <div data-slot="day-view" className="contents">
             {showAllDaySection && (
-                <div className="border-border/70 bg-muted/50 border-t">
+                <div className="border-primary/20 bg-card/30 border-t">
                     <div className="grid grid-cols-[3rem_1fr] sm:grid-cols-[4rem_1fr]">
-                        <div className="relative">
-                            <span className="text-muted-foreground/70 absolute bottom-0 left-0 h-6 w-16 max-w-full pe-2 text-right text-[10px] sm:pe-4 sm:text-xs">
+                        <div className="relative bg-card/20">
+                            <span className="text-primary-foreground/80 font-medium absolute bottom-0 left-0 h-6 w-16 max-w-full pe-2 text-right text-[10px] sm:pe-4 sm:text-xs">
                                 Alle dagen
                             </span>
                         </div>
@@ -226,15 +227,15 @@ export function DayView({
                 </div>
             )}
 
-            <div className="border-border/70 grid flex-1 grid-cols-[3rem_1fr] overflow-hidden border-t sm:grid-cols-[4rem_1fr]">
-                <div>
+            <div className="border-primary/20 grid flex-1 grid-cols-[3rem_1fr] overflow-hidden border-t sm:grid-cols-[4rem_1fr]">
+                <div className="bg-card/20 border-r border-primary/20">
                     {hours.map((hour, index) => (
                         <div
                             key={hour.toString()}
-                            className="border-border/70 relative h-[var(--week-cells-height)] border-b last:border-b-0"
+                            className="border-primary/10 relative h-(--week-cells-height) border-b last:border-b-0"
                         >
                             {index > 0 && (
-                                <span className="bg-background text-muted-foreground/70 absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end pe-2 text-[10px] sm:pe-4 sm:text-xs">
+                                <span className="bg-card/80 text-primary-foreground/80 font-medium absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end pe-2 text-[10px] sm:pe-4 sm:text-xs">
                                     {format(hour, 'HH:mm', { locale: nl })}
                                 </span>
                             )}
@@ -275,8 +276,8 @@ export function DayView({
                             style={{ top: `${currentTimePosition}%` }}
                         >
                             <div className="relative flex items-center">
-                                <div className="bg-primary absolute -left-1 h-2 w-2 rounded-full"></div>
-                                <div className="bg-primary h-[2px] w-full"></div>
+                                <div className="bg-primary-foreground shadow-lg shadow-primary-foreground/50 absolute -left-1 h-2 w-2 rounded-full"></div>
+                                <div className="bg-primary-foreground h-0.5 w-full shadow-sm"></div>
                             </div>
                         </div>
                     )}
@@ -287,7 +288,7 @@ export function DayView({
                         return (
                             <div
                                 key={hour.toString()}
-                                className="border-border/70 relative h-[var(--week-cells-height)] border-b last:border-b-0"
+                                className="border-primary/10 bg-card/10 hover:bg-card/20 transition-colors relative h-(--week-cells-height) border-b last:border-b-0"
                             >
                                 {/* Quarter-hour intervals */}
                                 {[0, 1, 2, 3].map((quarter) => {
