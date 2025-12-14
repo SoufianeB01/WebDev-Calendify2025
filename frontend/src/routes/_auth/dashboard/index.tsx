@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+// import { useQuery } from "@tanstack/react-query";
 
 import type { Event } from "@/types/Event";
 import type { CalendarEvent } from "@/components/event-calendar";
@@ -14,7 +15,36 @@ export const Route = createFileRoute("/_auth/dashboard/")({
 function RouteComponent() {
   const [calendarEvents, setCalendarEvents] = useState<Array<CalendarEvent>>([]);
 
+  // TODO: Uncomment when backend endpoint is ready
+  // Fetch events 
+  // const { data: eventsData } = useQuery({
+  //   queryKey: ['events'],
+  //   queryFn: async () => {
+  //     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
+  //     const response = await fetch(`${API_BASE}/api/events`, {
+  //       mode: 'cors',
+  //       credentials: 'include',
+  //     });
+  //     if (!response.ok) throw new Error('Failed to fetch events');
+  //     return response.json();
+  //   },
+  // });
+
   useEffect(() => {
+    // TODO: Uncomment when backend endpoint is ready and using useQuery above
+    // if (eventsData) {
+    //   const convertedEvents: Array<CalendarEvent> = eventsData.map((event: Event) => ({
+    //     id: event.eventId.toString(),
+    //     title: event.title,
+    //     description: event.description,
+    //     start: new Date(event.eventDate + 'T' + event.startTime),
+    //     end: new Date(event.eventDate + 'T' + event.endTime),
+    //     allDay: false,
+    //     color: 'sky' as const,
+    //   }));
+    //   setCalendarEvents(convertedEvents);
+    // }
+
     // Convert Event type to CalendarEvent type for the calendar component
     const convertedEvents: Array<CalendarEvent> = (mockData.events as Array<Event>).map(event => ({
       id: event.eventId.toString(),
@@ -27,8 +57,6 @@ function RouteComponent() {
     }));
     setCalendarEvents(convertedEvents);
   }, []);
-
-  console.log(calendarEvents)
 
   return (
     <div className="container mx-auto p-6">
