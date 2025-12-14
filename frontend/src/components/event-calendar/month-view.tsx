@@ -98,11 +98,11 @@ export function MonthView({
 
     return (
         <div data-slot="month-view" className="contents">
-            <div className="border-border/70 grid grid-cols-7 border-b">
+            <div className="bg-card/50 border-primary/20 grid grid-cols-7 border-b">
                 {weekdays.map(day => (
                     <div
                         key={day}
-                        className="text-muted-foreground/70 py-2 text-center text-sm"
+                        className="text-primary-foreground font-medium py-2 text-center text-sm"
                     >
                         {day}
                     </div>
@@ -135,7 +135,7 @@ export function MonthView({
                             return (
                                 <div
                                     key={day.toString()}
-                                    className="group border-border/70 data-outside-cell:bg-muted/25 data-outside-cell:text-muted-foreground/70 border-r border-b last:border-r-0"
+                                    className="group border-primary/10 bg-card/20 data-outside-cell:bg-muted/10 data-outside-cell:text-muted-foreground/50 border-r border-b last:border-r-0 hover:bg-card/40 transition-colors"
                                     data-today={isToday(day) || undefined}
                                     data-outside-cell={!isCurrentMonth || undefined}
                                 >
@@ -148,7 +148,7 @@ export function MonthView({
                                             onEventCreate(startTime);
                                         }}
                                     >
-                                        <div className="group-data-today:bg-primary group-data-today:text-primary-foreground mt-1 inline-flex size-6 items-center justify-center rounded-full text-sm">
+                                        <div className="group-data-today:bg-primary-foreground group-data-today:text-primary group-data-today:font-bold group-data-today:shadow-md mt-1 inline-flex size-6 items-center justify-center rounded-full text-sm text-foreground/80">
                                             {format(day, 'd', { locale: nl })}
                                         </div>
                                         <div
@@ -219,7 +219,8 @@ export function MonthView({
                                                 <Popover modal>
                                                     <PopoverTrigger asChild>
                                                         <Button
-                                                            className="focus-visible:border-ring !bg-primary-foreground focus-visible:ring-ring/50 text-muted-foreground hover:text-foreground hover:bg-muted/50 mt-[var(--event-gap)] flex h-[var(--event-height)] w-full items-center overflow-hidden px-1 text-left text-[10px] backdrop-blur-md transition outline-none select-none focus-visible:ring-[3px] sm:px-2 sm:text-xs"
+                                                            variant="ghost"
+                                                            className="focus-visible:border-ring bg-card/60 border border-primary/20 focus-visible:ring-ring/50 text-primary-foreground hover:text-foreground hover:bg-primary/20 hover:border-primary/40 mt-(--event-gap) flex h-(--event-height) w-full items-center justify-start overflow-hidden rounded px-1 text-left text-[10px] backdrop-blur-md transition outline-none select-none focus-visible:ring-[3px] sm:px-2 sm:text-xs"
                                                             onClick={e => e.stopPropagation()}
                                                         >
                                                             <span>

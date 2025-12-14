@@ -1,5 +1,5 @@
 import { flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from './ui/table';
 import type { Cell, ColumnDef, Row, SortingState } from '@tanstack/react-table';
 
@@ -69,42 +69,48 @@ export function CalendarTableRoot<TData, TValue>({
 }
 
 
-export function CalendarTableHeader() {
-    const projects: Array<CalendarEvent> = [
-        {
-            id: '7',
-            title: 'Sales Conference',
-            description: 'Discuss about new clients',
-            start: new Date(),
-            end: new Date(new Date().getTime() + 15 * 60000),
-            color: 'rose',
-        },
-    ];
+export function CalendarTableHeader({ events: externalEvents }: { events?: Array<CalendarEvent> }) {
+    const [events, setEvents] = useState<Array<CalendarEvent>>(externalEvents || []);
 
-    const [events, setEvents] = useState<Array<CalendarEvent>>(projects);
+    // Update events when externalEvents change
+    useEffect(() => {
+        if (externalEvents && externalEvents.length > 0) {
+            setEvents(externalEvents);
+        }
+    }, [externalEvents]);
+
+    // Save events to localStorage whenever they change
+    const saveEvents = (newEvents: Array<CalendarEvent>) => {
+        try {
+            localStorage.setItem('events', JSON.stringify(newEvents));
+            setEvents(newEvents);
+        } catch (error) {
+            console.error('Failed to save events to localStorage:', error);
+        }
+    };
 
     const handleEventAdd = (event: CalendarEvent) => {
-        setEvents([...events, event]);
+        const newEvents = [...events, event];
+        saveEvents(newEvents);
     };
 
     const handleEventUpdate = (updatedEvent: CalendarEvent) => {
-        setEvents(
-            events.map(event =>
-                event.id === updatedEvent.id ? updatedEvent : event,
-            ),
+        const newEvents = events.map(event =>
+            event.id === updatedEvent.id ? updatedEvent : event,
         );
+        saveEvents(newEvents);
     };
 
     return (
         <>
             <EventCalendar
-                events={projects}
+                events={events}
                 onEventAdd={handleEventAdd}
                 onEventUpdate={handleEventUpdate}
             />
         </>
     );
-};
+}
 
 export const CalendarTable = Object.assign(CalendarTableRoot, {
     Header: CalendarTableHeader,

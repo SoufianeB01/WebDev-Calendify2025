@@ -5,7 +5,7 @@ export const Route = createFileRoute('/_unauth')({
   beforeLoad: ({ location }) => {
     if (localStorage.getItem('isAuthenticated') === 'true') {
       throw redirect({
-        to: '/dashboard',
+        to: '/events',
         search: {
           redirectPath: location.href,
         },
