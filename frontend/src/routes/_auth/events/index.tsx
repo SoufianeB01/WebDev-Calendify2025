@@ -442,7 +442,7 @@ function RouteComponent() {
             <DialogTrigger asChild>
               <Button>
                 <PlusIcon className="h-4 w-4 mr-2" />
-                Nieuw Evenement
+                Nieuw evenement
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
@@ -453,9 +453,10 @@ function RouteComponent() {
                     e.stopPropagation();
                     addEventForm.handleSubmit();
                   }}
+                  noValidate
                 >
                   <DialogHeader>
-                    <DialogTitle>Nieuw Evenement Aanmaken</DialogTitle>
+                    <DialogTitle>Nieuw evenement aanmaken</DialogTitle>
                     <DialogDescription>Vul de gegevens in voor het nieuwe evenement</DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
@@ -536,9 +537,10 @@ function RouteComponent() {
                 e.stopPropagation();
                 editEventForm.handleSubmit();
               }}
+              noValidate
             >
               <DialogHeader>
-                <DialogTitle>Evenement Bewerken</DialogTitle>
+                <DialogTitle>Evenement bewerken</DialogTitle>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <editEventForm.AppField name="title" children={(field) => (
@@ -614,9 +616,10 @@ function RouteComponent() {
               e.stopPropagation();
               rateEventForm.handleSubmit();
             }}
+            noValidate
           >
             <DialogHeader>
-              <DialogTitle>Evenement Beoordelen</DialogTitle>
+              <DialogTitle>Evenement beoordelen</DialogTitle>
               <DialogDescription>Geef een beoordeling voor {selectedEvent?.title}</DialogDescription>
             </DialogHeader>
             <div className="py-4">
@@ -633,8 +636,8 @@ function RouteComponent() {
                       >
                         <StarIcon
                           className={`h-8 w-8 ${star <= field.state.value
-                              ? "text-yellow-500 fill-yellow-500"
-                              : "text-gray-300"
+                            ? "text-yellow-500 fill-yellow-500"
+                            : "text-gray-300"
                             }`}
                         />
                       </button>
@@ -648,7 +651,7 @@ function RouteComponent() {
                 selector={(state) => state.canSubmit}
                 children={(canSubmit) => (
                   <Button type="submit" disabled={!canSubmit}>
-                    Beoordeling Indienen
+                    Beoordeling indienen
                   </Button>
                 )}
               />
