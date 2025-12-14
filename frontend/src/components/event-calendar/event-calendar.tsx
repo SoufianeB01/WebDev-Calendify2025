@@ -257,7 +257,7 @@ export function EventCalendar({
                         <Button
                             variant="default"
                             onClick={handleEventCreate}
-                            className="gap-2 bg-primary-foreground text-primary hover:bg-primary-hover-secondary max-sm:text-sm cursor-pointer"
+                            className="gap-2 bg-primary-foreground text-primary hover:bg-primary-hover-secondary max-sm:text-sm"
                         >
                             <span className="max-sm:hidden">Evenement aanmaken</span>
                             <span className="sm:hidden">+ Event</span>

@@ -123,14 +123,14 @@ function RouteComponent() {
                                         <Button
                                             type="submit"
                                             disabled={!canSubmit}
-                                            className="cursor-pointer w-full flex-1 uppercase p-3"
+                                            className="w-full flex-1 uppercase p-3"
                                             children="Inloggen"
                                         />
                                     )}
                                 />
                                 <Button
                                     type="button"
-                                    className="cursor-pointer w-full flex-1 uppercase p-3"
+                                    className="w-full flex-1 uppercase p-3"
                                     onClick={() => navigate({ to: "/password-forgot" })}
                                     children="Wachtwoord vergeten"
                                 />
