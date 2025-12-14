@@ -57,7 +57,7 @@ const items: Array<MenuItem> = [
         icon: Users,
     },
     {
-        title: "Admin",
+        title: "Admin dashboard",
         url: "/admin",
         icon: ShieldUser,
     },

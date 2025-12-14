@@ -4,15 +4,14 @@ import { useState } from "react";
 import { CalendarIcon, ClockIcon, MapPinIcon, PencilIcon, PlusIcon, TrashIcon, UsersIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { Event } from "@/types/Event";
+import { createEventSchema } from "@/types/Event";
 import mockData from "@/data/mock.json";
+import { useAppForm } from "@/hooks/use-app-form";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/_auth/admin/")({
   component: RouteComponent,
@@ -29,13 +28,101 @@ function RouteComponent() {
   const [isAttendeesDialogOpen, setIsAttendeesDialogOpen] = useState(false);
   const [attendees, setAttendees] = useState<Array<string>>([]);
 
-  const [formData, setFormData] = useState<Partial<Event>>({
-    title: "",
-    description: "",
-    eventDate: "",
-    startTime: "",
-    endTime: "",
-    location: "",
+  const addEventForm = useAppForm({
+    defaultValues: {
+      title: "",
+      description: "",
+      eventDate: "",
+      startTime: "",
+      endTime: "",
+      location: "",
+    },
+    onSubmit: ({ value }) => {
+      // TODO: Uncomment when backend endpoint is ready
+      // addEventMutation.mutate(value, {
+      //   onSuccess: (newEvent) => {
+      //     setEvents([...events, newEvent]);
+      //     setIsAddDialogOpen(false);
+      //     addEventForm.reset();
+      //     toast.success("Evenement succesvol aangemaakt");
+      //   },
+      //   onError: (error) => {
+      //     console.error('Error creating event:', error);
+      //     toast.error("Fout bij het aanmaken van evenement");
+      //   },
+      //   onSettled: () => {
+      //     queryClient.invalidateQueries({ queryKey: ['events'] });
+      //   },
+      // });
+      // return;
+
+      // Mock add
+      const newEvent: Event = {
+        ...value as Event,
+        eventId: Math.max(...events.map((evt) => evt.eventId)) + 1,
+        createdBy: 1,
+        adminApproval: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        participants: {},
+      };
+      setEvents([...events, newEvent]);
+      toast.success("Evenement succesvol aangemaakt (demo)");
+
+      setIsAddDialogOpen(false);
+      addEventForm.reset();
+    },
+    validators: {
+      onSubmit: createEventSchema,
+    },
+  });
+
+  const editEventForm = useAppForm({
+    defaultValues: {
+      title: "",
+      description: "",
+      eventDate: "",
+      startTime: "",
+      endTime: "",
+      location: "",
+    },
+    onSubmit: ({ value }) => {
+      if (!selectedEvent) return;
+
+      // TODO: Uncomment when backend endpoint is ready
+      // updateEventMutation.mutate({ eventId: selectedEvent.eventId, data: value }, {
+      //   onSuccess: (updated) => {
+      //     setEvents(events.map(e => e.eventId === selectedEvent.eventId ? updated : e));
+      //     setIsEditDialogOpen(false);
+      //     setSelectedEvent(null);
+      //     editEventForm.reset();
+      //     toast.success("Evenement succesvol bijgewerkt");
+      //   },
+      //   onError: (error) => {
+      //     console.error('Error updating event:', error);
+      //     toast.error("Fout bij het bijwerken van evenement");
+      //   },
+      //   onSettled: () => {
+      //     queryClient.invalidateQueries({ queryKey: ['events'] });
+      //   },
+      // });
+      // return;
+
+      // Mock update
+      setEvents(
+        events.map((evt) =>
+          evt.eventId === selectedEvent.eventId ? { ...evt, ...value } : evt
+        )
+      );
+      toast.success("Evenement succesvol bijgewerkt (demo)");
+
+      setIsEditDialogOpen(false);
+      setSelectedEvent(null);
+      editEventForm.reset();
+    },
+    validators: {
+      onSubmit: createEventSchema,
+    },
   });
 
   // const addEventMutation = useMutation({
@@ -81,75 +168,7 @@ function RouteComponent() {
   //   },
   // });
 
-  const handleAddEvent = (e: React.FormEvent) => {
-    e.preventDefault();
 
-    // TODO: Uncomment when backend endpoint is ready
-    // addEventMutation.mutate(formData, {
-    //   onSuccess: (newEvent) => {
-    //     setEvents([...events, newEvent]);
-    //     setIsAddDialogOpen(false);
-    //     setFormData({});
-    //     toast.success("Evenement succesvol aangemaakt");
-    //   },
-    //   onError: (error) => {
-    //     console.error('Error creating event:', error);
-    //     toast.error("Fout bij het aanmaken van evenement");
-    //   },
-    //   onSettled: () => {
-    //     queryClient.invalidateQueries({ queryKey: ['events'] });
-    //   },
-    // });
-    // return;
-
-    // Mock add
-    const newEvent: Event = {
-      ...formData as Event,
-      eventId: Math.max(...events.map((evt) => evt.eventId)) + 1,
-      createdBy: 1,
-    };
-    setEvents([...events, newEvent]);
-    toast.success("Evenement succesvol aangemaakt (demo)");
-
-    setIsAddDialogOpen(false);
-    setFormData({});
-  };
-
-  const handleUpdateEvent = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedEvent) return;
-
-    // TODO: Uncomment when backend endpoint is ready
-    // updateEventMutation.mutate({ eventId: selectedEvent.eventId, data: formData }, {
-    //   onSuccess: (updated) => {
-    //     setEvents(events.map(e => e.eventId === selectedEvent.eventId ? updated : e));
-    //     setIsEditDialogOpen(false);
-    //     setSelectedEvent(null);
-    //     setFormData({});
-    //     toast.success("Evenement succesvol bijgewerkt");
-    //   },
-    //   onError: (error) => {
-    //     console.error('Error updating event:', error);
-    //     toast.error("Fout bij het bijwerken van evenement");
-    //   },
-    //   onSettled: () => {
-    //     queryClient.invalidateQueries({ queryKey: ['events'] });
-    //   },
-    // });
-    // return;
-
-    // Mock update
-    setEvents(
-      events.map((evt) =>
-        evt.eventId === selectedEvent.eventId ? { ...evt, ...formData } : evt
-      )
-    );
-    toast.success("Evenement succesvol bijgewerkt (demo)");
-
-    setIsEditDialogOpen(false);
-    setSelectedEvent(null);
-    setFormData({});
-  };
 
   const handleDeleteEvent = (eventId: number, eventTitle: string) => {
     if (!confirm(`Weet u zeker dat u "${eventTitle}" wilt verwijderen?`)) return;
@@ -203,108 +222,73 @@ function RouteComponent() {
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold">Admin dashboard</h1>
           <p className="text-muted-foreground">Beheer alle evenementen in het systeem</p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusIcon className="h-4 w-4 mr-2" />
-              Nieuw Evenement
+              Nieuw evenement
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
-            <form onSubmit={handleAddEvent}>
-              <DialogHeader>
-                <DialogTitle>Nieuw Evenement Aanmaken</DialogTitle>
-                <DialogDescription>
-                  Vul de gegevens in voor het nieuwe evenement
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div>
-                  <Label htmlFor="title">Titel</Label>
-                  <Input
-                    id="title"
-                    value={formData.title || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, title: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">Beschrijving</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="eventDate">Datum</Label>
-                    <Input
-                      id="eventDate"
-                      type="date"
-                      value={formData.eventDate || ""}
-                      onChange={(e) =>
-                        setFormData({ ...formData, eventDate: e.target.value })
-                      }
-                      required
-                    />
+            <addEventForm.AppForm>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  addEventForm.handleSubmit();
+                }}
+                noValidate
+              >
+                <DialogHeader>
+                  <DialogTitle>Nieuw evenement aanmaken</DialogTitle>
+                  <DialogDescription>
+                    Vul de gegevens in voor het nieuwe evenement
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <addEventForm.AppField name="title" children={(field) => (
+                    <field.TextField label="Titel" placeholder="Evenement titel" />
+                  )} />
+                  <addEventForm.AppField name="description" children={(field) => (
+                    <field.TextArea label="Beschrijving" />
+                  )} />
+                  <div className="grid grid-cols-3 gap-4">
+                    <addEventForm.AppField name="eventDate" children={(field) => (
+                      <field.TextField label="Datum" type="date" />
+                    )} />
+                    <addEventForm.AppField name="startTime" children={(field) => (
+                      <field.TextField label="Starttijd" type="time" />
+                    )} />
+                    <addEventForm.AppField name="endTime" children={(field) => (
+                      <field.TextField label="Eindtijd" type="time" />
+                    )} />
                   </div>
-                  <div>
-                    <Label htmlFor="startTime">Starttijd</Label>
-                    <Input
-                      id="startTime"
-                      type="time"
-                      value={formData.startTime || ""}
-                      onChange={(e) =>
-                        setFormData({ ...formData, startTime: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="endTime">Eindtijd</Label>
-                    <Input
-                      id="endTime"
-                      type="time"
-                      value={formData.endTime || ""}
-                      onChange={(e) =>
-                        setFormData({ ...formData, endTime: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
+                  <addEventForm.AppField name="location" children={(field) => (
+                    <field.TextField label="Locatie" placeholder="Evenement locatie" />
+                  )} />
                 </div>
-                <div>
-                  <Label htmlFor="location">Locatie</Label>
-                  <Input
-                    id="location"
-                    value={formData.location || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, location: e.target.value })
-                    }
-                    required
+                <DialogFooter>
+                  <addEventForm.Subscribe
+                    selector={(state) => state.canSubmit}
+                    children={(canSubmit) => (
+                      <Button type="submit" disabled={!canSubmit}>
+                        Aanmaken
+                      </Button>
+                    )}
                   />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit">Aanmaken</Button>
-              </DialogFooter>
-            </form>
+                </DialogFooter>
+              </form>
+            </addEventForm.AppForm>
           </DialogContent>
         </Dialog>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Evenementen Overzicht</CardTitle>
+          <CardTitle>Evenementen overzicht</CardTitle>
           <CardDescription>
             Beheer alle evenementen vanuit deze centrale tabel
           </CardDescription>
@@ -369,7 +353,12 @@ function RouteComponent() {
                           variant="outline"
                           onClick={() => {
                             setSelectedEvent(event);
-                            setFormData(event);
+                            editEventForm.setFieldValue("title", event.title);
+                            editEventForm.setFieldValue("description", event.description);
+                            editEventForm.setFieldValue("eventDate", event.eventDate);
+                            editEventForm.setFieldValue("startTime", event.startTime);
+                            editEventForm.setFieldValue("endTime", event.endTime);
+                            editEventForm.setFieldValue("location", event.location);
                             setIsEditDialogOpen(true);
                           }}
                         >
@@ -397,87 +386,52 @@ function RouteComponent() {
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl">
-          <form onSubmit={handleUpdateEvent}>
-            <DialogHeader>
-              <DialogTitle>Evenement Bewerken</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div>
-                <Label htmlFor="edit-title">Titel</Label>
-                <Input
-                  id="edit-title"
-                  value={formData.title || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-description">Beschrijving</Label>
-                <Textarea
-                  id="edit-description"
-                  value={formData.description || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="edit-eventDate">Datum</Label>
-                  <Input
-                    id="edit-eventDate"
-                    type="date"
-                    value={formData.eventDate || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, eventDate: e.target.value })
-                    }
-                    required
-                  />
+          <editEventForm.AppForm>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                editEventForm.handleSubmit();
+              }}
+              noValidate
+            >
+              <DialogHeader>
+                <DialogTitle>Evenement bewerken</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <editEventForm.AppField name="title" children={(field) => (
+                  <field.TextField label="Titel" placeholder="Evenement titel" />
+                )} />
+                <editEventForm.AppField name="description" children={(field) => (
+                  <field.TextArea label="Beschrijving" />
+                )} />
+                <div className="grid grid-cols-3 gap-4">
+                  <editEventForm.AppField name="eventDate" children={(field) => (
+                    <field.TextField label="Datum" type="date" />
+                  )} />
+                  <editEventForm.AppField name="startTime" children={(field) => (
+                    <field.TextField label="Starttijd" type="time" />
+                  )} />
+                  <editEventForm.AppField name="endTime" children={(field) => (
+                    <field.TextField label="Eindtijd" type="time" />
+                  )} />
                 </div>
-                <div>
-                  <Label htmlFor="edit-startTime">Starttijd</Label>
-                  <Input
-                    id="edit-startTime"
-                    type="time"
-                    value={formData.startTime || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, startTime: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-endTime">Eindtijd</Label>
-                  <Input
-                    id="edit-endTime"
-                    type="time"
-                    value={formData.endTime || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, endTime: e.target.value })
-                    }
-                    required
-                  />
-                </div>
+                <editEventForm.AppField name="location" children={(field) => (
+                  <field.TextField label="Locatie" placeholder="Evenement locatie" />
+                )} />
               </div>
-              <div>
-                <Label htmlFor="edit-location">Locatie</Label>
-                <Input
-                  id="edit-location"
-                  value={formData.location || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, location: e.target.value })
-                  }
-                  required
+              <DialogFooter>
+                <editEventForm.Subscribe
+                  selector={(state) => state.canSubmit}
+                  children={(canSubmit) => (
+                    <Button type="submit" disabled={!canSubmit}>
+                      Opslaan
+                    </Button>
+                  )}
                 />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit">Opslaan</Button>
-            </DialogFooter>
-          </form>
+              </DialogFooter>
+            </form>
+          </editEventForm.AppForm>
         </DialogContent>
       </Dialog>
 
