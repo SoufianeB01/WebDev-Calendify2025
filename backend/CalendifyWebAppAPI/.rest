@@ -27,6 +27,16 @@ Content-Type: application/json
   "password": "password123"
 }
 
+### Create Admin
+POST http://localhost:5143/api/admin
+Content-Type: application/json
+
+{
+  "AdminId": 0,
+  "UserId": 2,
+  "Permissions": "Full"
+}
+
 ### Auth - Me (check session)
 GET http://localhost:5143/api/auth/me
 

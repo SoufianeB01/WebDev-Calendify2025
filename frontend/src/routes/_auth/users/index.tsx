@@ -47,24 +47,23 @@ class UsersPage extends React.Component<{}, State> {
         {error && <div className="text-red-600">{error}</div>}
 
         {!loading && !error && (
-          <table className="w-full border border-gray-300 text-left">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="p-2 border">ID</th>
-                <th className="p-2 border">Email</th>
-                <th className="p-2 border">Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u: any) => (
-                <tr key={u.userId}>
-                  <td className="p-2 border">{u.userId}</td>
-                  <td className="p-2 border">{u.email}</td>
-                  <td className="p-2 border">{u.role}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              <table className="w-full bg-white text-teal-800">
+      <thead className="bg-teal-100">
+        <tr>
+          <th className="p-2">ID</th>
+          <th className="p-2">Email</th>
+          <th className="p-2">Role</th>
+        </tr>
+      </thead>
+
+      {users.map((u: any) => (
+        <tr key={u.userId} className="even:bg-gray-50">
+          <td className="p-2">{u.userId}</td>
+          <td className="p-2">{u.email}</td>
+          <td className="p-2">{u.role}</td>
+        </tr>
+      ))}
+    </table>
         )}
       </div>
     )

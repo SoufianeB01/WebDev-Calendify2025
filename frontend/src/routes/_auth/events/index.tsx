@@ -51,28 +51,27 @@ class EventsPage extends React.Component<{}, State> {
         {error && <div className="text-red-600">{error}</div>}
 
         {!loading && !error && (
-          <table className="w-full border text-left">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="p-2 border">ID</th>
-                <th className="p-2 border">Title</th>
-                <th className="p-2 border">Description</th>
-                <th className="p-2 border">Date</th>
-                <th className="p-2 border">CreatedBy</th>
-              </tr>
-            </thead>
-            <tbody>
-              {events.map((e: any) => (
-                <tr key={e.eventId}>
-                  <td className="p-2 border">{e.eventId}</td>
-                  <td className="p-2 border">{e.title}</td>
-                  <td className="p-2 border">{e.description}</td>
-                  <td className="p-2 border">{e.eventDate}</td>
-                  <td className="p-2 border">{e.createdBy}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+         <table className="w-full bg-white text-teal-800">
+          <thead className="bg-teal-100">
+            <tr>
+              <th className="p-2">ID</th>
+              <th className="p-2">Title</th>
+              <th className="p-2">Description</th>
+              <th className="p-2">Date</th>
+              <th className="p-2">Created By</th>
+            </tr>
+          </thead>
+
+          {events.map((e: any) => (
+            <tr key={e.eventId} className="even:bg-gray-50">
+              <td className="p-2">{e.eventId}</td>
+              <td className="p-2">{e.title}</td>
+              <td className="p-2">{e.description}</td>
+              <td className="p-2">{e.eventDate}</td>
+              <td className="p-2">{e.createdBy}</td>
+            </tr>
+          ))}
+        </table>
         )}
       </div>
     )
