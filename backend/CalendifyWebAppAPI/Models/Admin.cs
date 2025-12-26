@@ -1,9 +1,11 @@
+using System;
+
 namespace CalendifyWebAppAPI.Models
 {
     public class Admin
     {
-        public int AdminId { get; set; }
-        public int UserId { get; set; }
+        public Guid AdminId { get; set; } = Guid.NewGuid();
+        public Guid UserId { get; set; }
         public string Permissions { get; set; }
     }
 }
