@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using CalendifyWebAppAPI.Interfaces;
 using CalendifyWebAppAPI.Models;
 using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -36,17 +37,23 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(string id)
         {
-            var ev = await _eventService.GetEventByIdAsync(id);
+            if (!Guid.TryParse(id, out Guid eventId))
+                return BadRequest(new { message = "Invalid event ID format" });
+            
+            var ev = await _eventService.GetEventByIdAsync(eventId);
             if (ev == null) return NotFound(new { message = "Event not found" });
             return Ok(ev);
         }
 
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetByUser(int userId)
+        public async Task<IActionResult> GetByUser(string userId)
         {
-            var events = await _eventService.GetEventsByUserAsync(userId);
+            if (!Guid.TryParse(userId, out Guid userGuid))
+                return BadRequest(new { message = "Invalid user ID format" });
+            
+            var events = await _eventService.GetEventsByUserAsync(userGuid);
             if (events == null || events.Count == 0)
                 return Ok(new { message = "No events found for user", events = new List<Event>() });
             return Ok(events);
@@ -61,49 +68,66 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Event ev)
+        public async Task<IActionResult> Update(string id, [FromBody] Event ev)
         {
             if (!IsAdmin()) return Unauthorized(new { message = "Admin privileges required" });
-            var updated = await _eventService.UpdateEventAsync(id, ev);
+            if (!Guid.TryParse(id, out Guid eventId))
+                return BadRequest(new { message = "Invalid event ID format" });
+            
+            var updated = await _eventService.UpdateEventAsync(eventId, ev);
             if (updated == null) return NotFound(new { message = "Event not found" });
             return Ok(updated);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(string id)
         {
             if (!IsAdmin()) return Unauthorized(new { message = "Admin privileges required" });
-            var deleted = await _eventService.DeleteEventAsync(id);
+            if (!Guid.TryParse(id, out Guid eventId))
+                return BadRequest(new { message = "Invalid event ID format" });
+            
+            var deleted = await _eventService.DeleteEventAsync(eventId);
             if (!deleted) return NotFound(new { message = "Event not found" });
             return Ok(new { message = "Deleted" });
         }
 
         [HttpGet("{id}/attend")]
-        public async Task<IActionResult> AttendEvent(int id)
+        public async Task<IActionResult> AttendEvent(string id)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (!userId.HasValue) return Unauthorized();
+            if (!Guid.TryParse(id, out Guid eventId))
+                return BadRequest(new { message = "Invalid event ID format" });
+            
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
+                return Unauthorized();
 
-            var attendance = await _participationService.AttendEventAsync(userId.Value, id);
+            var attendance = await _participationService.AttendEventAsync(userId, eventId);
             return Ok(attendance);
         }
 
         [HttpGet("{id}/attendees")]
-        public async Task<IActionResult> GetAttendees(int id)
+        public async Task<IActionResult> GetAttendees(string id)
         {
-            var attendees = await _participationService.GetAttendeesAsync(id);
+            if (!Guid.TryParse(id, out Guid eventId))
+                return BadRequest(new { message = "Invalid event ID format" });
+            
+            var attendees = await _participationService.GetAttendeesAsync(eventId);
             if (attendees == null || attendees.Count == 0)
-                return Ok(new { message = "No attendees for this event", attendees = new List<int>() });
+                return Ok(new { message = "No attendees for this event", attendees = new List<Guid>() });
             return Ok(attendees);
         }
 
         [HttpDelete("{id}/attend")]
-        public async Task<IActionResult> CancelAttendance(int id)
+        public async Task<IActionResult> CancelAttendance(string id)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (!userId.HasValue) return Unauthorized();
+            if (!Guid.TryParse(id, out Guid eventId))
+                return BadRequest(new { message = "Invalid event ID format" });
+            
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
+                return Unauthorized();
 
-            var canceled = await _participationService.CancelAttendanceAsync(userId.Value, id);
+            var canceled = await _participationService.CancelAttendanceAsync(userId, eventId);
             if (!canceled) return NotFound();
             return Ok(new { message = "Canceled" });
         }
