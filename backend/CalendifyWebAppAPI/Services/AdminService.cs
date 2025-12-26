@@ -1,3 +1,4 @@
+using System;
 using CalendifyWebAppAPI.Data;
 using CalendifyWebAppAPI.Models;
 using System.Collections.Generic;
@@ -21,12 +22,12 @@ namespace CalendifyWebAppAPI.Services
             return await _context.Admins.ToListAsync();
         }
 
-        public async Task<Admin?> GetAdminByIdAsync(int id)
+        public async Task<Admin?> GetAdminByIdAsync(Guid id)
         {
             return await _context.Admins.FirstOrDefaultAsync(a => a.AdminId == id);
         }
 
-        public async Task<Admin?> GetAdminByUserIdAsync(int userId)
+        public async Task<Admin?> GetAdminByUserIdAsync(Guid userId)
         {
             return await _context.Admins.FirstOrDefaultAsync(a => a.UserId == userId);
         }
@@ -36,12 +37,14 @@ namespace CalendifyWebAppAPI.Services
             if (await _context.Admins.AnyAsync(a => a.UserId == admin.UserId))
                 return (false, "Admin already exists", null);
 
+            if (admin.AdminId == Guid.Empty)
+                admin.AdminId = Guid.NewGuid();
             _context.Admins.Add(admin);
             await _context.SaveChangesAsync();
             return (true, "", admin);
         }
 
-        public async Task<(bool success, string error, Admin? admin)> UpdateAdminAsync(int id, Admin updated)
+        public async Task<(bool success, string error, Admin? admin)> UpdateAdminAsync(Guid id, Admin updated)
         {
             var existing = await _context.Admins.FindAsync(id);
             if (existing == null) return (false, "Admin not found", null);
@@ -52,7 +55,7 @@ namespace CalendifyWebAppAPI.Services
             return (true, "", existing);
         }
 
-        public async Task<bool> DeleteAdminAsync(int id)
+        public async Task<bool> DeleteAdminAsync(Guid id)
         {
             var existing = await _context.Admins.FindAsync(id);
             if (existing == null) return false;
