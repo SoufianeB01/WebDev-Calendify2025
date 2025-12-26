@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -27,12 +28,12 @@ namespace CalendifyWebAppAPI.Services
             return attendance;
         }
 
-        public async Task<List<OfficeAttendance>> GetUserAttendancesAsync(int userId)
+        public async Task<List<OfficeAttendance>> GetUserAttendancesAsync(Guid userId)
         {
             return await _context.OfficeAttendances.Where(a => a.UserId == userId).ToListAsync();
         }
 
-        public async Task<OfficeAttendance?> UpdateAttendanceAsync(int id, OfficeAttendance updated)
+        public async Task<OfficeAttendance?> UpdateAttendanceAsync(Guid id, OfficeAttendance updated)
         {
             var existing = await _context.OfficeAttendances.FindAsync(id);
             if (existing == null)
@@ -46,7 +47,7 @@ namespace CalendifyWebAppAPI.Services
             return existing;
         }
 
-        public async Task<bool> DeleteAttendanceAsync(int id)
+        public async Task<bool> DeleteAttendanceAsync(Guid id)
         {
             var existing = await _context.OfficeAttendances.FindAsync(id);
             if (existing == null) return false;

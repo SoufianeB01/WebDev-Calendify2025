@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CalendifyWebAppAPI.Models;
@@ -7,10 +8,10 @@ namespace CalendifyWebAppAPI.Interfaces
     public interface IEventService
     {
         Task<List<Event>> GetAllEventsAsync();
-        Task<Event?> GetEventByIdAsync(int id);
-        Task<List<Event>> GetEventsByUserAsync(int userId);
+        Task<Event?> GetEventByIdAsync(Guid id);
+        Task<List<Event>> GetEventsByUserAsync(Guid userId);
         Task<Event> CreateEventAsync(Event ev);
-        Task<Event?> UpdateEventAsync(int id, Event ev);
-        Task<bool> DeleteEventAsync(int id);
+        Task<Event?> UpdateEventAsync(Guid id, Event ev);
+        Task<bool> DeleteEventAsync(Guid id);
     }
 }

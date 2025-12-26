@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,19 +16,21 @@ namespace CalendifyWebAppAPI.Services
 
         public async Task<List<Event>> GetAllEventsAsync() => await _context.Events.ToListAsync();
 
-        public async Task<Event?> GetEventByIdAsync(int id) => await _context.Events.FirstOrDefaultAsync(e => e.EventId == id);
+        public async Task<Event?> GetEventByIdAsync(Guid id) => await _context.Events.FirstOrDefaultAsync(e => e.EventId == id);
 
-        public async Task<List<Event>> GetEventsByUserAsync(int userId) =>
+        public async Task<List<Event>> GetEventsByUserAsync(Guid userId) =>
             await _context.Events.Where(e => e.CreatedBy == userId).ToListAsync();
 
         public async Task<Event> CreateEventAsync(Event ev)
         {
+            if (ev.EventId == Guid.Empty)
+                ev.EventId = Guid.NewGuid();
             _context.Events.Add(ev);
             await _context.SaveChangesAsync();
             return ev;
         }
 
-        public async Task<Event?> UpdateEventAsync(int id, Event ev)
+        public async Task<Event?> UpdateEventAsync(Guid id, Event ev)
         {
             var existing = await _context.Events.FirstOrDefaultAsync(e => e.EventId == id);
             if (existing == null) return null;
@@ -42,7 +45,7 @@ namespace CalendifyWebAppAPI.Services
             return existing;
         }
 
-        public async Task<bool> DeleteEventAsync(int id)
+        public async Task<bool> DeleteEventAsync(Guid id)
         {
             var existing = await _context.Events.FirstOrDefaultAsync(e => e.EventId == id);
             if (existing == null) return false;

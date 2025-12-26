@@ -27,7 +27,7 @@ namespace CalendifyWebAppAPI.Controllers
             if (!success || employee == null)
                 return Unauthorized(new { message = error });
 
-            HttpContext.Session.SetInt32("UserId", employee.UserId);
+            HttpContext.Session.SetString("UserId", employee.UserId.ToString());
             HttpContext.Session.SetString("UserEmail", employee.Email);
             HttpContext.Session.SetString("UserRole", isAdmin ? "Admin" : employee.Role);
 
@@ -43,13 +43,13 @@ namespace CalendifyWebAppAPI.Controllers
         [HttpGet("me")]
         public IActionResult Me()
         {
-            var id = HttpContext.Session.GetInt32("UserId");
-            if (!id.HasValue)
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
                 return Unauthorized(new { message = "No active session" });
 
             return Ok(new
             {
-                userId = id.Value,
+                userId = userIdStr,
                 email = HttpContext.Session.GetString("UserEmail"),
                 role = HttpContext.Session.GetString("UserRole")
             });

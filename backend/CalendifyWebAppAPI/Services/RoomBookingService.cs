@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -27,12 +28,12 @@ namespace CalendifyWebAppAPI.Services
             return booking;
         }
 
-        public async Task<List<RoomBooking>> GetUserBookingsAsync(int userId)
+        public async Task<List<RoomBooking>> GetUserBookingsAsync(Guid userId)
         {
             return await _context.RoomBookings.Where(r => r.UserId == userId).ToListAsync();
         }
 
-        public async Task<RoomBooking?> UpdateBookingAsync(int roomId, int userId, RoomBooking updated)
+        public async Task<RoomBooking?> UpdateBookingAsync(Guid roomId, Guid userId, RoomBooking updated)
         {
             var existing = await _context.RoomBookings.FindAsync(roomId, userId, updated.BookingDate, updated.StartTime);
             if (existing == null) return null;
@@ -42,7 +43,7 @@ namespace CalendifyWebAppAPI.Services
             return existing;
         }
 
-        public async Task<bool> DeleteBookingAsync(int roomId, int userId, System.DateTime bookingDate, System.TimeSpan startTime)
+        public async Task<bool> DeleteBookingAsync(Guid roomId, Guid userId, System.DateTime bookingDate, System.TimeSpan startTime)
         {
             var existing = await _context.RoomBookings.FindAsync(roomId, userId, bookingDate, startTime);
             if (existing == null) return false;
