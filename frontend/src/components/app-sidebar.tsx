@@ -138,11 +138,11 @@ export default function AppSidebar() {
                                                         //     toast.error("U kon niet worden uitgelogd. Er is een onverwachte fout opgetreden.");
                                                         // }
                                                         // else {
-                                                        // window.location.href = "/login";
+                                                        //     navigate({ to: "/login" });
                                                         // }
 
                                                         localStorage.removeItem('isAuthenticated');
-                                                        window.location.href = "/login"
+                                                        navigate({ to: "/login" });
                                                     }}
                                                 >
                                                     <LogOut className="size-5! text-popover-foreground" />

@@ -1,3 +1,4 @@
+using System;
 using CalendifyWebAppAPI.Models;
 using CalendifyWebAppAPI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -34,13 +35,16 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(string id)
         {
             if (!IsAdmin())
             {
                 return Unauthorized(new { message = "Admin required" });
             }
-            var admin_ = await _adminService.GetAdminByIdAsync(id);
+            if (!Guid.TryParse(id, out Guid adminId))
+                return BadRequest(new { message = "Invalid admin ID format" });
+            
+            var admin_ = await _adminService.GetAdminByIdAsync(adminId);
             if (admin_ == null)
             {
                 return NotFound(new { message = "Admin not found" });
@@ -49,13 +53,16 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetByUserId(int userId)
+        public async Task<IActionResult> GetByUserId(string userId)
         {
             if (!IsAdmin())
             {
                 return Unauthorized(new { message = "Admin required" });
             }
-            var admin_ = await _adminService.GetAdminByUserIdAsync(userId);
+            if (!Guid.TryParse(userId, out Guid userGuid))
+                return BadRequest(new { message = "Invalid user ID format" });
+            
+            var admin_ = await _adminService.GetAdminByUserIdAsync(userGuid);
             if (admin_ == null)
             {
                 return NotFound(new { message = "Admin not found" });
@@ -79,13 +86,16 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Admin updated)
+        public async Task<IActionResult> Update(string id, [FromBody] Admin updated)
         {
             if (!IsAdmin())
             {
                 return Unauthorized(new { message = "Admin required" });
             }
-            var result = await _adminService.UpdateAdminAsync(id, updated);
+            if (!Guid.TryParse(id, out Guid adminId))
+                return BadRequest(new { message = "Invalid admin ID format" });
+            
+            var result = await _adminService.UpdateAdminAsync(adminId, updated);
             if (!result.success)
             {
                 return BadRequest(new { message = result.error });
@@ -94,13 +104,16 @@ namespace CalendifyWebAppAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(string id)
         {
             if (!IsAdmin())
             {
                 return Unauthorized(new { message = "Admin required" });
             }
-            var success = await _adminService.DeleteAdminAsync(id);
+            if (!Guid.TryParse(id, out Guid adminId))
+                return BadRequest(new { message = "Invalid admin ID format" });
+            
+            var success = await _adminService.DeleteAdminAsync(adminId);
             if (!success)
             {
                 return NotFound(new { message = "Admin not found" });

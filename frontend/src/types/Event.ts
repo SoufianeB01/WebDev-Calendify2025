@@ -2,14 +2,14 @@ import { z } from "zod";
 
 // Event schema
 export const eventSchema = z.object({
-    eventId: z.number(),
+    eventId: z.string().uuid("Event ID must be a valid UUID"),
     title: z.string().min(1, "Titel is verplicht").max(100, "Titel mag maximaal 100 tekens bevatten"),
     description: z.string().min(1, "Beschrijving is verplicht").max(500, "Beschrijving mag maximaal 500 tekens bevatten"),
     eventDate: z.string().min(1, "Datum is verplicht"),
     startTime: z.string().min(1, "Starttijd is verplicht"),
     endTime: z.string().min(1, "Eindtijd is verplicht"),
     location: z.string().min(1, "Locatie is verplicht").max(200, "Locatie mag maximaal 200 tekens bevatten"),
-    createdBy: z.number(),
+    createdBy: z.string().uuid("CreatedBy must be a valid UUID"),
     adminApproval: z.boolean(),
     createdAt: z.string(),
     updatedAt: z.string(),

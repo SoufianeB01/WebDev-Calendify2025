@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using System;
 using System.Threading.Tasks;
 using CalendifyWebAppAPI.Services.Interfaces;
 using CalendifyWebAppAPI.Models;
@@ -20,9 +21,10 @@ namespace CalendifyWebAppAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Book([FromBody] RoomBooking booking)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (!userId.HasValue) return Unauthorized();
-            if (booking.UserId != userId.Value) return Unauthorized();
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
+                return Unauthorized();
+            if (booking.UserId != userId) return Unauthorized();
 
             var booked = await _service.BookRoomAsync(booking);
             if (booked == null) return BadRequest(new { message = "Room occupied" });
@@ -32,18 +34,20 @@ namespace CalendifyWebAppAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetBookings()
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (!userId.HasValue) return Unauthorized();
-            var bookings = await _service.GetUserBookingsAsync(userId.Value);
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
+                return Unauthorized();
+            var bookings = await _service.GetUserBookingsAsync(userId);
             return Ok(bookings);
         }
 
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] RoomBooking updated)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (!userId.HasValue) return Unauthorized();
-            if (updated.UserId != userId.Value) return Unauthorized();
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
+                return Unauthorized();
+            if (updated.UserId != userId) return Unauthorized();
 
             var result = await _service.UpdateBookingAsync(updated.RoomId, updated.UserId, updated);
             if (result == null) return NotFound();
@@ -53,9 +57,10 @@ namespace CalendifyWebAppAPI.Controllers
         [HttpDelete]
         public async Task<IActionResult> Delete([FromBody] RoomBooking booking)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (!userId.HasValue) return Unauthorized();
-            if (booking.UserId != userId.Value) return Unauthorized();
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
+                return Unauthorized();
+            if (booking.UserId != userId) return Unauthorized();
 
             var deleted = await _service.DeleteBookingAsync(booking.RoomId, booking.UserId, booking.BookingDate, booking.StartTime);
             if (!deleted) return NotFound();
