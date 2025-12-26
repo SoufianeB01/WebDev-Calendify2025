@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 // import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftIcon, CalendarIcon, ClockIcon, MapPinIcon, StarIcon, UsersIcon, XCircleIcon } from "lucide-react";
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/_auth/events/$eventId/")({
 });
 
 function RouteComponent() {
+    const navigate = useNavigate();
     const params = Route.useParams();
     const eventId = params.eventId;
     // const queryClient = useQueryClient();
@@ -92,13 +93,13 @@ function RouteComponent() {
         // setIsLoading(queryLoading);
 
         // Mock data from JSON
-        const foundEvent = (mockData.events as Array<Event>).find((e) => e.eventId === parseInt(eventId));
+        const foundEvent = (mockData.events as Array<Event>).find((e) => e.eventId === eventId);
         setEvent(foundEvent || null);
         setIsLoading(false);
 
         // Mock reviews from JSON
         const eventReviews = mockData.reviews
-            .filter((r) => r.eventId === parseInt(eventId))
+            .filter((r) => r.eventId === eventId)
             .map((r) => ({
                 userId: r.userId,
                 userName: r.userName,
@@ -213,7 +214,7 @@ function RouteComponent() {
         return (
             <div className="container mx-auto p-6">
                 <p>Evenement niet gevonden</p>
-                <Button onClick={() => window.location.href = "/events"} className="mt-4">
+                <Button onClick={() => navigate({ to: "/events" })} className="mt-4">
                     Terug naar Evenementen
                 </Button>
             </div>
@@ -226,7 +227,7 @@ function RouteComponent() {
         <div className="container mx-auto p-6">
             <Button
                 variant="ghost"
-                onClick={() => window.location.href = "/events"}
+                onClick={() => navigate({ to: "/events" })}
                 className="mb-4"
             >
                 <ArrowLeftIcon className="h-4 w-4 mr-2" />

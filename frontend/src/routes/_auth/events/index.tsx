@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { z } from "zod";
 // import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CalendarIcon, ClockIcon, MapPinIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,13 +16,21 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+const eventsSearchSchema = z.object({
+  status: z.enum(["upcoming", "past"]).optional(),
+  location: z.string().optional(),
+});
+
 export const Route = createFileRoute(
   '/_auth/events/',
 )({
   component: RouteComponent,
+  validateSearch: eventsSearchSchema,
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
+  const search = Route.useSearch();
   // Mock events data from JSON
   const [events, setEvents] = useState<Array<Event>>(mockData.events as Array<Event>);
   // const queryClient = useQueryClient();
@@ -34,8 +43,27 @@ function RouteComponent() {
   const [isRatingDialogOpen, setIsRatingDialogOpen] = useState(false);
 
   const now = new Date();
+  let filteredEvents = events;
+  
+  if (search.status === "upcoming") {
+    filteredEvents = events.filter(e => new Date(e.eventDate) >= now);
+  } else if (search.status === "past") {
+    filteredEvents = events.filter(e => new Date(e.eventDate) < now);
+  }
+  
+  if (search.location) {
+    filteredEvents = filteredEvents.filter(e => 
+      e.location.toLowerCase().includes(search.location!.toLowerCase())
+    );
+  }
+
   const upcomingEvents = events.filter(e => new Date(e.eventDate) >= now);
   const pastEvents = events.filter(e => new Date(e.eventDate) < now);
+  
+  useEffect(() => {
+    if (search.status) {
+    }
+  }, [search.status]);
 
   const addEventForm = useAppForm({
     defaultValues: {
@@ -68,8 +96,8 @@ function RouteComponent() {
       // Mock add
       const newEvent: Event = {
         ...value as Event,
-        eventId: Math.max(...events.map(evt => evt.eventId)) + 1,
-        createdBy: 1,
+        eventId: crypto.randomUUID(),
+        createdBy: crypto.randomUUID(),
         adminApproval: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -375,7 +403,7 @@ function RouteComponent() {
         <Button
           size="sm"
           variant="outline"
-          onClick={() => window.location.href = `/events/${event.eventId}`}
+          onClick={() => navigate({ to: `/events/${event.eventId}` })}
         >
           Details
         </Button>
@@ -498,7 +526,16 @@ function RouteComponent() {
         )}
       </div>
 
-      <Tabs defaultValue="upcoming" className="w-full">
+      <Tabs 
+        value={search.status || "upcoming"} 
+        onValueChange={(value) => {
+          navigate({ 
+            to: "/events", 
+            search: { ...search, status: value === "upcoming" ? undefined : value as "past" | "upcoming" }
+          });
+        }}
+        className="w-full"
+      >
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="upcoming">Aankomende ({upcomingEvents.length})</TabsTrigger>
           <TabsTrigger value="past">Afgelopen ({pastEvents.length})</TabsTrigger>
