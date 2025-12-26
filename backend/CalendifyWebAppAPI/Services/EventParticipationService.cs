@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace CalendifyWebAppAPI.Services
             _context = context;
         }
 
-        public async Task<EventParticipation> AttendEventAsync(int userId, int eventId)
+        public async Task<EventParticipation> AttendEventAsync(Guid userId, Guid eventId)
         {
             var existing = await _context.EventParticipations
                 .FirstOrDefaultAsync(ep => ep.UserId == userId && ep.EventId == eventId);
@@ -34,7 +35,7 @@ namespace CalendifyWebAppAPI.Services
             return epNew;
         }
 
-        public async Task<List<int>> GetAttendeesAsync(int eventId)
+        public async Task<List<Guid>> GetAttendeesAsync(Guid eventId)
         {
             return await _context.EventParticipations
                 .Where(ep => ep.EventId == eventId)
@@ -43,7 +44,7 @@ namespace CalendifyWebAppAPI.Services
                 .ToListAsync();
         }
 
-        public async Task<bool> CancelAttendanceAsync(int userId, int eventId)
+        public async Task<bool> CancelAttendanceAsync(Guid userId, Guid eventId)
         {
             var existing = await _context.EventParticipations
                 .FirstOrDefaultAsync(ep => ep.UserId == userId && ep.EventId == eventId);
