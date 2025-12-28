@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 // import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { CalendarIcon, CheckCircleIcon, ClockIcon, PlusIcon, TrashIcon, XCircleIcon } from "lucide-react";
+import { CalendarIcon, CheckCircleIcon, ClockIcon, PieChartIcon, PlusIcon, TrashIcon, XCircleIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import type { OfficeAttendance } from "@/types/OfficeAttendance";
@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AttendancePieChart } from "@/components/charts/AttendancePieChart";
 
 export const Route = createFileRoute('/_auth/office-attendance/')({
   component: RouteComponent,
@@ -223,38 +224,89 @@ function RouteComponent() {
         </Dialog>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid gap-4 md:grid-cols-5 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Totaal Dagen</CardDescription>
-            <CardTitle className="text-3xl">{totalDays}</CardTitle>
+      {/* Statistics Section with Pie Chart */}
+      <div className="grid gap-6 lg:grid-cols-2 mb-6">
+        {/* Pie Chart Card - Custom Feature */}
+        <Card className="lg:row-span-2">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <PieChartIcon className="h-5 w-5 text-primary" />
+              <CardTitle>Aanwezigheid Overzicht</CardTitle>
+            </div>
+            <CardDescription>
+              Visuele verdeling van uw kantooraanwezigheid
+            </CardDescription>
           </CardHeader>
+          <CardContent>
+            <AttendancePieChart
+              data={{
+                present: presentDays,
+                remote: remoteDays,
+                late: lateDays,
+                absent: absentDays,
+              }}
+              size="md"
+              animated={true}
+              showLegend={true}
+              showTooltip={true}
+              showCenterLabel={true}
+            />
+          </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Aanwezig</CardDescription>
-            <CardTitle className="text-3xl text-green-600">{presentDays}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Op Afstand</CardDescription>
-            <CardTitle className="text-3xl text-blue-600">{remoteDays}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Te Laat</CardDescription>
-            <CardTitle className="text-3xl text-yellow-600">{lateDays}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Afwezig</CardDescription>
-            <CardTitle className="text-3xl text-red-600">{absentDays}</CardTitle>
-          </CardHeader>
-        </Card>
+
+        {/* Statistics Cards Grid */}
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-2 content-start">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Totaal Dagen</CardDescription>
+              <CardTitle className="text-3xl">{totalDays}</CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Aanwezig</CardDescription>
+              <CardTitle className="text-3xl text-green-600">{presentDays}</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-xs text-muted-foreground">
+                {totalDays > 0 ? ((presentDays / totalDays) * 100).toFixed(1) : 0}% van totaal
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Op Afstand</CardDescription>
+              <CardTitle className="text-3xl text-blue-600">{remoteDays}</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-xs text-muted-foreground">
+                {totalDays > 0 ? ((remoteDays / totalDays) * 100).toFixed(1) : 0}% van totaal
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Te Laat</CardDescription>
+              <CardTitle className="text-3xl text-yellow-600">{lateDays}</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-xs text-muted-foreground">
+                {totalDays > 0 ? ((lateDays / totalDays) * 100).toFixed(1) : 0}% van totaal
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="col-span-2">
+            <CardHeader className="pb-2">
+              <CardDescription>Afwezig</CardDescription>
+              <CardTitle className="text-3xl text-red-600">{absentDays}</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-xs text-muted-foreground">
+                {totalDays > 0 ? ((absentDays / totalDays) * 100).toFixed(1) : 0}% van totaal
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Attendance Table */}
