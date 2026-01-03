@@ -1,4 +1,5 @@
 import React from 'react';
+import { toast } from 'sonner';
 
 interface LoginProps {
   title?: string;
@@ -12,7 +13,7 @@ interface LoginState {
   error: string | null;
 }
 
-const API_BASE = 'http://localhost:5143';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
 
 export default class Login extends React.Component<LoginProps, LoginState> {
   constructor(props: LoginProps) {
@@ -28,40 +29,31 @@ export default class Login extends React.Component<LoginProps, LoginState> {
     this.setState({ password: e.target.value });
   };
 
-  handleSubmit = () => {
+  handleSubmit = async () => {
     const { email, password } = this.state;
     this.setState({ loading: true, error: null });
 
-    fetch(`${API_BASE}/api/auth/login`, {
-      method: 'POST',
-      mode: 'cors',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-      .then(res =>
-        res
-          .json()
-          .then(body => ({ ok: res.ok, status: res.status, body }))
-          .catch(() => ({ ok: res.ok, status: res.status, body: null })),
-      )
-      .then(({ ok, status, body }) => {
-        if (!ok) {
-          this.setState({
-            error: body?.message || `Login failed (${status})`,
-            loading: false,
-          });
-          return;
-        }
-        this.setState({ loading: false });
-        this.props.onSuccess?.();
-      })
-      .catch(err => {
-        this.setState({
-          error: err.message ? `Server error: ${err.message}` : 'Server error',
-          loading: false,
-        });
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
+
+      const body = await res.json();
+
+      if (!res.ok) {
+        this.setState({ error: body?.message || 'Login failed', loading: false });
+        return;
+      }
+
+      this.setState({ loading: false });
+      toast.success('Inloggen gelukt');
+      this.props.onSuccess?.();
+    } catch (err: any) {
+      this.setState({ error: err.message || 'Server error', loading: false });
+    }
   };
 
   render() {
@@ -69,15 +61,8 @@ export default class Login extends React.Component<LoginProps, LoginState> {
     const { email, password, loading, error } = this.state;
 
     return (
-      <div
-        className="
-          bg-white border-2 border-orange-500 rounded-[48px] md:rounded-[60px]
-          p-8 md:p-10 shadow-sm w-[680px] max-w-[92vw]
-        "
-      >
-        <h2 className="text-teal-700 text-2xl font-semibold text-center mb-8">
-          {title}
-        </h2>
+      <div className="bg-white border-2 border-orange-500 rounded-[48px] md:rounded-[60px] p-8 md:p-10 shadow-sm w-[680px] max-w-[92vw]">
+        <h2 className="text-teal-700 text-2xl font-semibold text-center mb-8">{title}</h2>
 
         <div className="grid grid-cols-[auto,1fr] gap-x-6 gap-y-6 items-center">
           <label className="text-teal-700">Email:</label>
@@ -86,11 +71,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
             value={email}
             onChange={this.handleEmailChange}
             placeholder="Email"
-            className="
-              border-2 border-orange-500 rounded-sm px-3 py-2
-              focus:outline-none focus:ring-2 focus:ring-orange-300
-              text-black placeholder:text-gray-500
-            "
+            className="border-2 border-orange-500 rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-300 text-black placeholder:text-gray-500"
           />
 
           <label className="text-teal-700">Password:</label>
@@ -99,11 +80,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
             value={password}
             onChange={this.handlePasswordChange}
             placeholder="Password"
-            className="
-              border-2 border-orange-500 rounded-sm px-3 py-2
-              focus:outline-none focus:ring-2 focus:ring-orange-300
-              text-black placeholder:text-gray-500
-            "
+            className="border-2 border-orange-500 rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-300 text-black placeholder:text-gray-500"
           />
 
           <div className="col-span-2 flex justify-end mt-2">
@@ -111,20 +88,13 @@ export default class Login extends React.Component<LoginProps, LoginState> {
               type="button"
               onClick={this.handleSubmit}
               disabled={loading}
-              className="
-                bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 text-white
-                px-5 py-2 rounded-md border-2 border-emerald-900 shadow
-                cursor-pointer
-              "
+              className="bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 text-white px-5 py-2 rounded-md border-2 border-emerald-900 shadow cursor-pointer"
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>
           </div>
 
-          {error && (
-            <div className="col-span-2 text-sm text-red-600 -mt-2">{error}</div>
-          )}
-
+          {error && <div className="col-span-2 text-sm text-red-600 -mt-2">{error}</div>}
         </div>
       </div>
     );
