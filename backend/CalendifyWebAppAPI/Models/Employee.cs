@@ -4,7 +4,7 @@ namespace CalendifyWebAppAPI.Models
 {
     public class Employee
     {
-        public Guid UserId { get; set; } = Guid.NewGuid();
+        public Guid UserId { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string Role { get; set; }

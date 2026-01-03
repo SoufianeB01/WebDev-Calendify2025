@@ -22,7 +22,6 @@ namespace CalendifyWebAppAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Map to lowercase table names (match PostgreSQL tables)
             modelBuilder.Entity<Employee>().ToTable("employees");
             modelBuilder.Entity<Event>().ToTable("events");
             modelBuilder.Entity<Room>().ToTable("rooms");
@@ -32,8 +31,9 @@ namespace CalendifyWebAppAPI.Data
             modelBuilder.Entity<EventParticipation>().ToTable("eventparticipations");
             modelBuilder.Entity<GroupMembership>().ToTable("groupmemberships");
             modelBuilder.Entity<OfficeAttendance>().ToTable("officeattendances");
+            modelBuilder.Entity<EventReview>().ToTable("eventreviews");
 
-
+            // EventParticipation composite key
             modelBuilder.Entity<EventParticipation>(eventParticipation =>
             {
                 eventParticipation.HasKey(x => new { x.UserId, x.EventId });
@@ -45,9 +45,9 @@ namespace CalendifyWebAppAPI.Data
                     .HasForeignKey(x => x.EventId);
             });
 
+            // EventReview
             modelBuilder.Entity<EventReview>(review =>
             {
-                review.ToTable("eventreviews");
                 review.HasKey(x => x.ReviewId);
                 review.HasOne<Event>()
                     .WithMany()
@@ -55,16 +55,26 @@ namespace CalendifyWebAppAPI.Data
                 review.HasOne<Employee>()
                     .WithMany()
                     .HasForeignKey(x => x.UserId);
+
+                // GUID PK
+                review.Property(x => x.ReviewId)
+                      .ValueGeneratedNever();
             });
 
+            // OfficeAttendance
             modelBuilder.Entity<OfficeAttendance>(officeAttendance =>
             {
                 officeAttendance.HasKey(x => x.AttendanceId);
                 officeAttendance.HasOne<Employee>()
                     .WithMany()
                     .HasForeignKey(x => x.UserId);
+
+                // GUID PK
+                officeAttendance.Property(x => x.AttendanceId)
+                               .ValueGeneratedNever();
             });
 
+            // RoomBooking composite key
             modelBuilder.Entity<RoomBooking>(roomBooking =>
             {
                 roomBooking.HasKey(x => new { x.RoomId, x.UserId, x.BookingDate, x.StartTime });
@@ -76,6 +86,7 @@ namespace CalendifyWebAppAPI.Data
                     .HasForeignKey(x => x.UserId);
             });
 
+            // GroupMembership composite key
             modelBuilder.Entity<GroupMembership>(groupMembership =>
             {
                 groupMembership.HasKey(x => new { x.UserId, x.GroupId });
@@ -87,35 +98,46 @@ namespace CalendifyWebAppAPI.Data
                     .HasForeignKey(x => x.GroupId);
             });
 
+            // Admin
             modelBuilder.Entity<Admin>(admin =>
             {
                 admin.HasKey(x => x.AdminId);
+                admin.Property(x => x.AdminId).ValueGeneratedNever();
                 admin.HasOne<Employee>()
                     .WithMany()
-                    .HasForeignKey(x => x.UserId);
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
+            // Event
             modelBuilder.Entity<Event>(eventEntity =>
             {
                 eventEntity.HasKey(x => x.EventId);
+                eventEntity.Property(x => x.EventId).ValueGeneratedNever();
                 eventEntity.HasOne<Employee>()
                     .WithMany()
                     .HasForeignKey(x => x.CreatedBy);
             });
 
+            // Room
             modelBuilder.Entity<Room>(room =>
             {
                 room.HasKey(x => x.RoomId);
+                room.Property(x => x.RoomId).ValueGeneratedNever();
             });
 
+            // Group
             modelBuilder.Entity<Group>(group =>
             {
                 group.HasKey(x => x.GroupId);
+                group.Property(x => x.GroupId).ValueGeneratedNever();
             });
 
+            // Employee
             modelBuilder.Entity<Employee>(employee =>
             {
                 employee.HasKey(x => x.UserId);
+                employee.Property(x => x.UserId).ValueGeneratedNever();
             });
         }
     }

@@ -23,6 +23,11 @@ namespace CalendifyWebAppAPI.Services
             var exists = await _context.OfficeAttendances.FirstOrDefaultAsync(a => a.UserId == attendance.UserId && a.Date == attendance.Date);
             if (exists != null) return null;
 
+            if (attendance.AttendanceId == Guid.Empty)
+            {
+                attendance.AttendanceId = Guid.NewGuid();
+            }
+
             _context.OfficeAttendances.Add(attendance);
             await _context.SaveChangesAsync();
             return attendance;

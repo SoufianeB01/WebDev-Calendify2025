@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using CalendifyWebAppAPI.Services;
 using CalendifyWebAppAPI.Services.Interfaces;
 using CalendifyWebAppAPI.Interfaces;
+using CalendifyWebAppAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +76,20 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<AdminService>();
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<AppDbContext>();
+    var passwordHasher = services.GetRequiredService<IPasswordHasher<Employee>>();
+    try
+    {
+        SeedData.Initialize(context, passwordHasher);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"SeedData.Initialize failed: {ex.Message}");
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {

@@ -24,18 +24,15 @@ namespace CalendifyWebAppAPI.Migrations
 
             modelBuilder.Entity("CalendifyWebAppAPI.Models.Admin", b =>
                 {
-                    b.Property<int>("AdminId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AdminId"));
+                    b.Property<Guid>("AdminId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Permissions")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("AdminId");
 
@@ -46,11 +43,8 @@ namespace CalendifyWebAppAPI.Migrations
 
             modelBuilder.Entity("CalendifyWebAppAPI.Models.Employee", b =>
                 {
-                    b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserId"));
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -75,14 +69,11 @@ namespace CalendifyWebAppAPI.Migrations
 
             modelBuilder.Entity("CalendifyWebAppAPI.Models.Event", b =>
                 {
-                    b.Property<int>("EventId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("EventId"));
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -114,11 +105,11 @@ namespace CalendifyWebAppAPI.Migrations
 
             modelBuilder.Entity("CalendifyWebAppAPI.Models.EventParticipation", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("EventId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -133,11 +124,8 @@ namespace CalendifyWebAppAPI.Migrations
 
             modelBuilder.Entity("CalendifyWebAppAPI.Models.EventReview", b =>
                 {
-                    b.Property<int>("ReviewId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReviewId"));
+                    b.Property<Guid>("ReviewId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Comment")
                         .IsRequired()
@@ -146,14 +134,14 @@ namespace CalendifyWebAppAPI.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("EventId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Rating")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("ReviewId");
 
@@ -166,11 +154,8 @@ namespace CalendifyWebAppAPI.Migrations
 
             modelBuilder.Entity("CalendifyWebAppAPI.Models.Group", b =>
                 {
-                    b.Property<int>("GroupId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("GroupId"));
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -187,11 +172,11 @@ namespace CalendifyWebAppAPI.Migrations
 
             modelBuilder.Entity("CalendifyWebAppAPI.Models.GroupMembership", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("GroupId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("UserId", "GroupId");
 
@@ -202,11 +187,8 @@ namespace CalendifyWebAppAPI.Migrations
 
             modelBuilder.Entity("CalendifyWebAppAPI.Models.OfficeAttendance", b =>
                 {
-                    b.Property<int>("AttendanceId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AttendanceId"));
+                    b.Property<Guid>("AttendanceId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone");
@@ -215,8 +197,8 @@ namespace CalendifyWebAppAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("AttendanceId");
 
@@ -227,11 +209,8 @@ namespace CalendifyWebAppAPI.Migrations
 
             modelBuilder.Entity("CalendifyWebAppAPI.Models.Room", b =>
                 {
-                    b.Property<int>("RoomId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RoomId"));
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Capacity")
                         .HasColumnType("integer");
@@ -251,11 +230,11 @@ namespace CalendifyWebAppAPI.Migrations
 
             modelBuilder.Entity("CalendifyWebAppAPI.Models.RoomBooking", b =>
                 {
-                    b.Property<int>("RoomId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("BookingDate")
                         .HasColumnType("timestamp with time zone");
