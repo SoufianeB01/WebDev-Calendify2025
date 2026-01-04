@@ -27,6 +27,7 @@ type MenuItem = {
     title: string;
     url: string;
     icon: ComponentType<any>;
+    adminOnly?: boolean;
 };
 
 const items: Array<MenuItem> = [
@@ -34,8 +35,8 @@ const items: Array<MenuItem> = [
     { title: "Evenementen", url: "/events", icon: CalendarDays },
     { title: "Kantoor aanwezigheid", url: "/office-attendance", icon: UserCheck },
     { title: "Kamers", url: "/rooms", icon: DoorOpen },
-    { title: "Gebruikers", url: "/users", icon: Users },
-    { title: "Admin dashboard", url: "/admin", icon: ShieldUser },
+    { title: "Gebruikers", url: "/users", icon: Users, adminOnly: true },
+    { title: "Admin dashboard", url: "/admin", icon: ShieldUser, adminOnly: true },
 ];
 
 interface CurrentUser {
@@ -54,9 +55,7 @@ export default function AppSidebar() {
     useEffect(() => {
         const fetchCurrentUser = async () => {
             try {
-                const res = await fetch(`${API_BASE}/api/auth/me`, {
-                    credentials: "include",
-                });
+                const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: "include" });
                 if (!res.ok) throw new Error("Geen actieve sessie");
                 const data: CurrentUser = await res.json();
                 setCurrentUser(data);
@@ -68,6 +67,8 @@ export default function AppSidebar() {
         fetchCurrentUser();
     }, []);
 
+    const visibleItems = items.filter(item => !item.adminOnly || currentUser?.role === "Admin");
+
     return (
         <Sidebar>
             <SidebarContent>
@@ -76,9 +77,9 @@ export default function AppSidebar() {
                         <img src={logo} className="h-32 max-w-32 pointer-events-none select-none" alt="logo" />
                     </SidebarGroupLabel>
 
-                    <SidebarGroupContent className="h-full">
-                        <SidebarMenu className="gap-2 h-full">
-                            {items.map((item) => {
+                    <SidebarGroupContent className="h-full flex flex-col">
+                        <SidebarMenu className="gap-2 flex-1 flex flex-col">
+                            {visibleItems.map((item) => {
                                 const isActive = location.pathname.startsWith(item.url);
                                 return (
                                     <SidebarMenuItem key={item.title} className="mx-1">
@@ -121,33 +122,22 @@ export default function AppSidebar() {
                                             side="top"
                                             sideOffset={0}
                                         >
-                                             <DropdownMenuItem
-                                                    className="px-2 py-3 flex items-center gap-2 w-full h-full cursor-pointer"
-                                                    onSelect={() => navigate({ to: "/profile" })}
-                                                >
-                                                    <CircleUserIcon className="size-5! text-popover-foreground" />
-                                                    {/* HACK: Create: translation(s) */}
-                                                    <h3 className="text-base">Mijn profiel</h3>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className="px-2 py-3 flex items-center gap-2 w-full h-full cursor-pointer"
-                                                    onSelect={() => {
-                                                        // const response = await authClient.signOut();
-
-                                                        // if (response.error) {
-                                                        //     toast.error("U kon niet worden uitgelogd. Er is een onverwachte fout opgetreden.");
-                                                        // }
-                                                        // else {
-                                                        //     navigate({ to: "/login" });
-                                                        // }
-
-                                                        localStorage.removeItem('isAuthenticated');
-                                                        navigate({ to: "/login" });
-                                                    }}
-                                                >
-                                                    <LogOut className="size-5! text-popover-foreground" />
-                                                    {/* HACK: Create: translation(s) */}
-                                                    <h3 className="text-base">Uitloggen</h3>
+                                            <DropdownMenuItem
+                                                className="px-2 py-3 flex items-center gap-2 w-full h-full cursor-pointer"
+                                                onSelect={() => navigate({ to: "/profile" })}
+                                            >
+                                                <CircleUserIcon className="size-5! text-popover-foreground" />
+                                                <h3 className="text-base">Mijn profiel</h3>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                className="px-2 py-3 flex items-center gap-2 w-full h-full cursor-pointer"
+                                                onSelect={() => {
+                                                    localStorage.removeItem('isAuthenticated');
+                                                    navigate({ to: "/login" });
+                                                }}
+                                            >
+                                                <LogOut className="size-5! text-popover-foreground" />
+                                                <h3 className="text-base">Uitloggen</h3>
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>

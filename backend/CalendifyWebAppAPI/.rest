@@ -12,7 +12,7 @@ POST http://localhost:5143/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "employee2@company.com",
+  "email": "employee4@company.com",
   "password": "password123"
 }
 
@@ -171,3 +171,12 @@ POST http://localhost:5143/api/attendance/2a52dadd-394d-4e2d-b948-107449362a0f
 
 ###
 GET http://localhost:5143/api/attendance
+
+### Add office attendance
+POST http://localhost:5143/api/attendance
+Content-Type: application/json
+
+{
+  "date": "2026-01-04",
+  "status": "Present"
+}

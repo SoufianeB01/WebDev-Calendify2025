@@ -38,25 +38,51 @@ namespace CalendifyWebAppAPI.Data
                 Password = passwordHasher.HashPassword(null, "password123")
             };
 
-            context.Employees.AddRange(emp1, emp2, emp3);
+            // Employees
+            var emp4 = new Employee
+            {
+                UserId = Guid.NewGuid(),
+                Name = "Employee Four Admin",
+                Email = "employee4@company.com",
+                Role = "Admin",
+                Password = passwordHasher.HashPassword(null, "password123")
+            };
+            var emp5 = new Employee
+            {
+                UserId = Guid.NewGuid(),
+                Name = "Employee Five Admin",
+                Email = "employee5@company.com",
+                Role = "Admin",
+                Password = passwordHasher.HashPassword(null, "password123")
+            };
+            var emp6 = new Employee
+            {
+                UserId = Guid.NewGuid(),
+                Name = "Employee Six Admin",
+                Email = "employee6@company.com",
+                Role = "Admin",
+                Password = passwordHasher.HashPassword(null, "password123")
+            };
+
+            context.Employees.AddRange(emp1, emp2, emp3, emp4, emp5, emp6);
 
             // Admins
             var admin1 = new Admin
             {
                 AdminId = Guid.NewGuid(),
-                UserId = emp1.UserId,
+                UserId = emp4.UserId,
                 Permissions = "Full"
             };
             var admin2 = new Admin
             {
                 AdminId = Guid.NewGuid(),
-                UserId = emp2.UserId,
+                UserId = emp5.UserId,
                 Permissions = "Full"
             };
             var admin3 = new Admin
             {
                 AdminId = Guid.NewGuid(),
-                UserId = emp3.UserId,
+                UserId = emp6.UserId,
                 Permissions = "Full"
             };
             context.Admins.AddRange(admin1, admin2, admin3);
