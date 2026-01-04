@@ -8,7 +8,7 @@ using CalendifyWebAppAPI.Models;
 namespace CalendifyWebAppAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/attendance")]
     public class AttendanceController : ControllerBase
     {
         private readonly IAttendanceService _service;
@@ -18,57 +18,54 @@ namespace CalendifyWebAppAPI.Controllers
             _service = service;
         }
 
-        [HttpPost]
+       [HttpPost]
         public async Task<IActionResult> Add([FromBody] OfficeAttendance attendance)
         {
             var userIdStr = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
                 return Unauthorized();
-            if (attendance.UserId != userId) return Unauthorized();
+
+            attendance.UserId = userId;
+            attendance.Date = DateTime.SpecifyKind(attendance.Date, DateTimeKind.Utc);
 
             var added = await _service.AddAttendanceAsync(attendance);
             if (added == null) return BadRequest(new { message = "Date occupied" });
+
             return Ok(added);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetMine()
         {
             var userIdStr = HttpContext.Session.GetString("UserId");
-            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
                 return Unauthorized();
+
             var attendances = await _service.GetUserAttendancesAsync(userId);
             return Ok(attendances);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] OfficeAttendance updated)
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetByUser(string userId)
         {
-            if (!Guid.TryParse(id, out Guid attendanceId))
-                return BadRequest(new { message = "Invalid attendance ID format" });
-            
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
-                return Unauthorized();
-            
-            var attendance = await _service.UpdateAttendanceAsync(attendanceId, updated);
-            if (attendance == null) return NotFound();
-            return Ok(attendance);
+            if (!Guid.TryParse(userId, out var parsedUserId))
+                return BadRequest();
+
+            var attendances = await _service.GetUserAttendancesAsync(parsedUserId);
+            return Ok(attendances);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            if (!Guid.TryParse(id, out Guid attendanceId))
-                return BadRequest(new { message = "Invalid attendance ID format" });
-            
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out Guid userId))
-                return Unauthorized();
-            
+            if (!Guid.TryParse(id, out var attendanceId))
+                return BadRequest();
+
             var deleted = await _service.DeleteAttendanceAsync(attendanceId);
-            if (!deleted) return NotFound();
-            return Ok(new { message = "Deleted" });
+            if (!deleted)
+                return NotFound();
+
+            return Ok();
         }
     }
 }

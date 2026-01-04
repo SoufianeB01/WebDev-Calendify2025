@@ -9,7 +9,6 @@ namespace CalendifyWebAppAPI.Services.Interfaces
     {
         Task<OfficeAttendance?> AddAttendanceAsync(OfficeAttendance attendance);
         Task<List<OfficeAttendance>> GetUserAttendancesAsync(Guid userId);
-        Task<OfficeAttendance?> UpdateAttendanceAsync(Guid id, OfficeAttendance updated);
         Task<bool> DeleteAttendanceAsync(Guid id);
     }
 }

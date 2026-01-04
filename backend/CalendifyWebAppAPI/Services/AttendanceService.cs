@@ -20,13 +20,13 @@ namespace CalendifyWebAppAPI.Services
 
         public async Task<OfficeAttendance?> AddAttendanceAsync(OfficeAttendance attendance)
         {
-            var exists = await _context.OfficeAttendances.FirstOrDefaultAsync(a => a.UserId == attendance.UserId && a.Date == attendance.Date);
-            if (exists != null) return null;
+            var exists = await _context.OfficeAttendances
+                .AnyAsync(a =>
+                    a.UserId == attendance.UserId &&
+                    a.Date.Date == attendance.Date.Date
+                );
 
-            if (attendance.AttendanceId == Guid.Empty)
-            {
-                attendance.AttendanceId = Guid.NewGuid();
-            }
+            if (exists) return null;
 
             _context.OfficeAttendances.Add(attendance);
             await _context.SaveChangesAsync();
@@ -35,21 +35,10 @@ namespace CalendifyWebAppAPI.Services
 
         public async Task<List<OfficeAttendance>> GetUserAttendancesAsync(Guid userId)
         {
-            return await _context.OfficeAttendances.Where(a => a.UserId == userId).ToListAsync();
-        }
-
-        public async Task<OfficeAttendance?> UpdateAttendanceAsync(Guid id, OfficeAttendance updated)
-        {
-            var existing = await _context.OfficeAttendances.FindAsync(id);
-            if (existing == null)
-            {
-                return null;
-            }
-
-            existing.Date = updated.Date;
-            existing.Status = updated.Status;
-            await _context.SaveChangesAsync();
-            return existing;
+            return await _context.OfficeAttendances
+                .Where(a => a.UserId == userId)
+                .OrderByDescending(a => a.Date)
+                .ToListAsync();
         }
 
         public async Task<bool> DeleteAttendanceAsync(Guid id)

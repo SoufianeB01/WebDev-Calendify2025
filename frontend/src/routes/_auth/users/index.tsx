@@ -1,17 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-// import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PencilIcon, PlusIcon, ShieldIcon, TrashIcon, UserIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import type { User } from "@/types/User";
 import { createUserSchema, updateUserSchema } from "@/types/User";
-import mockData from "@/data/mock.json";
 import { useAppForm } from "@/hooks/use-app-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,192 +18,102 @@ export const Route = createFileRoute('/_auth/users/')({
   component: RouteComponent,
 });
 
-function RouteComponent() {
-  // Mock users data from JSON
-  const [users, setUsers] = useState<Array<User>>(mockData.users as Array<User>);
-  // const queryClient = useQueryClient();
+export default function RouteComponent() {
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5143";
 
+  const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/employees`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch employees");
+      const data = await res.json();
+      setUsers(data);
+    } catch {
+      toast.error("Gebruikers konden niet worden geladen");
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   const addUserForm = useAppForm({
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      username: "",
-      email: "",
-      role: "Employee" as "Admin" | "Employee",
-      password: "",
-    },
-    onSubmit: ({ value }) => {
-      // TODO: Uncomment when backend endpoint is ready
-      // addUserMutation.mutate(value, {
-      //   onSuccess: (newUser) => {
-      //     setUsers([...users, newUser]);
-      //     setIsAddDialogOpen(false);
-      //     addUserForm.reset();
-      //     toast.success("Gebruiker succesvol aangemaakt");
-      //   },
-      //   onError: (error) => {
-      //     console.error('Error creating user:', error);
-      //     toast.error("Fout bij het aanmaken van gebruiker");
-      //   },
-      //   onSettled: () => {
-      //     queryClient.invalidateQueries({ queryKey: ['users'] });
-      //   },
-      // });
-      // return;
-
-      // Mock add
-      const newUser: User = {
-        userId: Math.max(...users.map(u => u.userId)) + 1,
-        firstName: value.firstName,
-        lastName: value.lastName,
-        username: value.username,
-        email: value.email,
-        role: value.role,
-      };
-      setUsers([...users, newUser]);
-      toast.success("Gebruiker succesvol aangemaakt (demo)");
-
-      setIsAddDialogOpen(false);
-      addUserForm.reset();
-    },
-    validators: {
-      onSubmit: createUserSchema,
-    },
+    defaultValues: { name: "", email: "", role: "Employee" as "Admin" | "Employee", password: "" },
+    validators: { onSubmit: createUserSchema },
+    onSubmit: async ({ value }) => {
+      try {
+        const res = await fetch(`${API_BASE}/api/employees`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(value),
+        });
+        if (!res.ok) throw new Error("Failed to create employee");
+        const newUser = await res.json();
+        setUsers(prev => [...prev, newUser]);
+        toast.success("Gebruiker succesvol aangemaakt");
+        setIsAddDialogOpen(false);
+        addUserForm.reset();
+      } catch {
+        toast.error("Gebruiker aanmaken mislukt");
+      }
+    }
   });
 
   const editUserForm = useAppForm({
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      username: "",
-      email: "",
-      role: "Employee" as "Admin" | "Employee",
-      password: "" as string | undefined,
-    },
-    onSubmit: ({ value }) => {
+    defaultValues: { name: "", email: "", role: "Employee" as "Admin" | "Employee", password: "" },
+    validators: { onSubmit: updateUserSchema },
+    onSubmit: async ({ value }) => {
       if (!selectedUser) return;
+      const body = { ...value };
+      if (!body.password) delete body.password;
 
-      // TODO: Uncomment when backend endpoint is ready
-      // updateUserMutation.mutate({ userId: selectedUser.userId, data: value }, {
-      //   onSuccess: (updated) => {
-      //     setUsers(users.map(u => u.userId === selectedUser.userId ? updated : u));
-      //     setIsEditDialogOpen(false);
-      //     setSelectedUser(null);
-      //     editUserForm.reset();
-      //     toast.success("Gebruiker succesvol bijgewerkt");
-      //   },
-      //   onError: (error) => {
-      //     console.error('Error updating user:', error);
-      //     toast.error("Fout bij het bijwerken van gebruiker");
-      //   },
-      //   onSettled: () => {
-      //     queryClient.invalidateQueries({ queryKey: ['users'] });
-      //   },
-      // });
-      // return;
-
-      // Mock update
-      setUsers(users.map(u =>
-        u.userId === selectedUser.userId ? { ...u, ...value } : u
-      ));
-      toast.success("Gebruiker succesvol bijgewerkt (demo)");
-
-      setIsEditDialogOpen(false);
-      setSelectedUser(null);
-      editUserForm.reset();
-    },
-    validators: {
-      onSubmit: updateUserSchema,
-    },
+      try {
+        const res = await fetch(`${API_BASE}/api/employees/${selectedUser.userId}`, {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error("Failed to update employee");
+        const updated = await res.json();
+        setUsers(prev => prev.map(u => (u.userId === updated.userId ? updated : u)));
+        toast.success("Gebruiker succesvol bijgewerkt");
+        setIsEditDialogOpen(false);
+        setSelectedUser(null);
+        editUserForm.reset();
+      } catch {
+        toast.error("Gebruiker bijwerken mislukt");
+      }
+    }
   });
 
-  // TanStack Query mutation for adding user
-  // const addUserMutation = useMutation({
-  //   mutationFn: async (data: Partial<User & { password?: string }>) => {
-  //     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-  //     const response = await fetch(`${API_BASE}/api/admin/users`, {
-  //       method: 'POST',
-  //       mode: 'cors',
-  //       credentials: 'include',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify(data),
-  //     });
-  //     if (!response.ok) throw new Error('Failed to create user');
-  //     return response.json();
-  //   },
-  // });
-
-  // TanStack Query mutation for updating user
-  // const updateUserMutation = useMutation({
-  //   mutationFn: async ({ userId, data }: { userId: number; data: Partial<User & { password?: string }> }) => {
-  //     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-  //     const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
-  //       method: 'PUT',
-  //       mode: 'cors',
-  //       credentials: 'include',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify(data),
-  //     });
-  //     if (!response.ok) throw new Error('Failed to update user');
-  //     return response.json();
-  //   },
-  // });
-
-  // TanStack Query mutation for deleting user
-  // const deleteUserMutation = useMutation({
-  //   mutationFn: async (userId: number) => {
-  //     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-  //     const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
-  //       method: 'DELETE',
-  //       mode: 'cors',
-  //       credentials: 'include',
-  //     });
-  //     if (!response.ok) throw new Error('Failed to delete user');
-  //     return userId;
-  //   },
-  // });
-
-  const handleDeleteUser = (userId: number) => {
+  const handleDeleteUser = async (userId: string) => {
     if (!confirm("Weet u zeker dat u deze gebruiker wilt verwijderen?")) return;
 
-    // TODO: Uncomment when backend endpoint is ready
-    // deleteUserMutation.mutate(userId, {
-    //   onSuccess: (deletedUserId) => {
-    //     setUsers(users.filter(u => u.userId !== deletedUserId));
-    //     toast.success("Gebruiker succesvol verwijderd");
-    //   },
-    //   onError: (error) => {
-    //     console.error('Error deleting user:', error);
-    //     toast.error("Fout bij het verwijderen van gebruiker");
-    //   },
-    //   onSettled: () => {
-    //     queryClient.invalidateQueries({ queryKey: ['users'] });
-    //   },
-    // });
-    // return;
-
-    // Mock delete
-    setUsers(users.filter(u => u.userId !== userId));
-    toast.success("Gebruiker succesvol verwijderd (demo)");
-  };
-
-  const getRoleBadge = (role: string) => {
-    if (role === "Admin") {
-      return (
-        <Badge className="bg-purple-500">
-          <ShieldIcon className="h-3 w-3 mr-1" /> Admin
-        </Badge>
-      );
+    try {
+      const res = await fetch(`${API_BASE}/api/employees/${userId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to delete employee");
+      setUsers(prev => prev.filter(u => u.userId !== userId));
+      toast.success("Gebruiker succesvol verwijderd");
+    } catch {
+      toast.error("Gebruiker verwijderen mislukt");
     }
-    return (
-      <Badge variant="secondary">
-        <UserIcon className="h-3 w-3 mr-1" /> Employee
-      </Badge>
-    );
   };
+
+  const getRoleBadge = (role: string) =>
+    role === "Admin" ? (
+      <Badge className="bg-purple-500"><ShieldIcon className="h-3 w-3 mr-1" /> Admin</Badge>
+    ) : (
+      <Badge variant="secondary"><UserIcon className="h-3 w-3 mr-1" /> Employee</Badge>
+    );
 
   return (
     <div className="container mx-auto p-6">
@@ -214,89 +122,38 @@ function RouteComponent() {
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Nieuwe gebruiker
+              <PlusIcon className="h-4 w-4 mr-2" /> Nieuwe gebruiker
             </Button>
           </DialogTrigger>
           <DialogContent>
             <addUserForm.AppForm>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  addUserForm.handleSubmit();
-                }}
-                noValidate
-              >
+              <form onSubmit={e => { e.preventDefault(); addUserForm.handleSubmit(); }} noValidate>
                 <DialogHeader>
                   <DialogTitle>Nieuwe gebruiker aanmaken</DialogTitle>
-                  <DialogDescription>Vul de gegevens in voor de nieuwe gebruiker</DialogDescription>
+                  <p className="text-sm text-muted-foreground mt-1">Vul de gegevens in voor de nieuwe gebruiker</p>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <addUserForm.AppField
-                    name="firstName"
-                    children={(field) => (
-                      <field.TextField label="Voornaam" type="text" />
-                    )}
-                  />
-                  <addUserForm.AppField
-                    name="lastName"
-                    children={(field) => (
-                      <field.TextField label="Achternaam" type="text" />
-                    )}
-                  />
-                  <addUserForm.AppField
-                    name="username"
-                    children={(field) => (
-                      <field.TextField label="Gebruikersnaam" type="text" />
-                    )}
-                  />
-                  <addUserForm.AppField
-                    name="email"
-                    children={(field) => (
-                      <field.TextField label="E-mail" type="text" />
-                    )}
-                  />
-                  <addUserForm.AppField
-                    name="password"
-                    children={(field) => (
-                      <field.TextField label="Wachtwoord" type="password" />
-                    )}
-                  />
-                  <addUserForm.AppField
-                    name="role"
-                    children={(field) => (
-                      <div>
-                        <Label htmlFor={field.name}>Rol</Label>
-                        <Select
-                          value={field.state.value}
-                          onValueChange={(value) => field.handleChange(value as "Admin" | "Employee")}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecteer rol" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Employee">Employee</SelectItem>
-                            <SelectItem value="Admin">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {field.state.meta.errors.length > 0 && (
-                          <p className="text-sm text-destructive mt-1">
-                            {String(field.state.meta.errors[0])}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  />
+                  <addUserForm.AppField name="name">{field => <field.TextField label="Naam" type="text" />}</addUserForm.AppField>
+                  <addUserForm.AppField name="email">{field => <field.TextField label="E-mail" type="text" />}</addUserForm.AppField>
+                  <addUserForm.AppField name="password">{field => <field.TextField label="Wachtwoord" type="password" />}</addUserForm.AppField>
+                  <addUserForm.AppField name="role">{field => (
+                    <div>
+                      <Label htmlFor={field.name}>Rol</Label>
+                      <Select value={field.state.value} onValueChange={(value) => field.handleChange(value as "Admin" | "Employee")}>
+                        <SelectTrigger><SelectValue placeholder="Selecteer rol" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Employee">Employee</SelectItem>
+                          <SelectItem value="Admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {field.state.meta.errors.length > 0 && <p className="text-sm text-destructive mt-1">{String(field.state.meta.errors[0])}</p>}
+                    </div>
+                  )}</addUserForm.AppField>
                 </div>
                 <DialogFooter>
-                  <addUserForm.Subscribe
-                    selector={(state) => state.canSubmit}
-                    children={(canSubmit) => (
-                      <Button type="submit" disabled={!canSubmit}>
-                        Aanmaken
-                      </Button>
-                    )}
-                  />
+                  <addUserForm.Subscribe selector={state => state.canSubmit}>{canSubmit => (
+                    <Button type="submit" disabled={!canSubmit}>Aanmaken</Button>
+                  )}</addUserForm.Subscribe>
                 </DialogFooter>
               </form>
             </addUserForm.AppForm>
@@ -311,55 +168,38 @@ function RouteComponent() {
         </CardHeader>
         <CardContent>
           {users.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              Geen gebruikers gevonden
-            </p>
+            <p className="text-muted-foreground text-center py-8">Geen gebruikers gevonden</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Naam</TableHead>
-                  <TableHead>Gebruikersnaam</TableHead>
                   <TableHead>E-mail</TableHead>
                   <TableHead>Rol</TableHead>
                   <TableHead className="text-right">Acties</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user) => (
+                {users.map(user => (
                   <TableRow key={user.userId}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <UserIcon className="h-4 w-4 text-muted-foreground" />
-                        {user.firstName} {user.lastName}
-                      </div>
+                    <TableCell className="font-medium flex items-center gap-2">
+                      <UserIcon className="h-4 w-4 text-muted-foreground" /> {user.name}
                     </TableCell>
-                    <TableCell>{user.username}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{getRoleBadge(user.role)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            editUserForm.setFieldValue("firstName", user.firstName);
-                            editUserForm.setFieldValue("lastName", user.lastName);
-                            editUserForm.setFieldValue("username", user.username);
-                            editUserForm.setFieldValue("email", user.email);
-                            editUserForm.setFieldValue("role", user.role);
-                            editUserForm.setFieldValue("password", "");
-                            setIsEditDialogOpen(true);
-                          }}
-                        >
+                        <Button size="sm" variant="outline" onClick={() => {
+                          setSelectedUser(user);
+                          editUserForm.setFieldValue("name", user.name);
+                          editUserForm.setFieldValue("email", user.email);
+                          editUserForm.setFieldValue("role", user.role);
+                          editUserForm.setFieldValue("password", "");
+                          setIsEditDialogOpen(true);
+                        }}>
                           <PencilIcon className="h-4 w-4" />
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteUser(user.userId)}
-                        >
+                        <Button size="sm" variant="destructive" onClick={() => handleDeleteUser(user.userId)}>
                           <TrashIcon className="h-4 w-4" />
                         </Button>
                       </div>
@@ -372,87 +212,36 @@ function RouteComponent() {
         </CardContent>
       </Card>
 
-      {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <editUserForm.AppForm>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                editUserForm.handleSubmit();
-              }}
-              noValidate
-            >
+            <form onSubmit={e => { e.preventDefault(); editUserForm.handleSubmit(); }} noValidate>
               <DialogHeader>
                 <DialogTitle>Gebruiker bewerken</DialogTitle>
-                <DialogDescription>Bewerk de gebruikersgegevens</DialogDescription>
+                <p className="text-sm text-muted-foreground mt-1">Bewerk de gebruikersgegevens</p>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <editUserForm.AppField
-                  name="firstName"
-                  children={(field) => (
-                    <field.TextField label="Voornaam" type="text" />
-                  )}
-                />
-                <editUserForm.AppField
-                  name="lastName"
-                  children={(field) => (
-                    <field.TextField label="Achternaam" type="text" />
-                  )}
-                />
-                <editUserForm.AppField
-                  name="username"
-                  children={(field) => (
-                    <field.TextField label="Gebruikersnaam" type="text" />
-                  )}
-                />
-                <editUserForm.AppField
-                  name="email"
-                  children={(field) => (
-                    <field.TextField label="E-mail" type="text" />
-                  )}
-                />
-                <editUserForm.AppField
-                  name="password"
-                  children={(field) => (
-                    <field.TextField label="Nieuw wachtwoord (optioneel)" type="password" placeholder="Laat leeg om niet te wijzigen" />
-                  )}
-                />
-                <editUserForm.AppField
-                  name="role"
-                  children={(field) => (
-                    <div>
-                      <Label htmlFor={field.name}>Rol</Label>
-                      <Select
-                        value={field.state.value}
-                        onValueChange={(value) => field.handleChange(value as "Admin" | "Employee")}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecteer rol" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Employee">Employee</SelectItem>
-                          <SelectItem value="Admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {field.state.meta.errors.length > 0 && (
-                        <p className="text-sm text-destructive mt-1">
-                          {String(field.state.meta.errors[0])}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                />
+                <editUserForm.AppField name="name">{field => <field.TextField label="Naam" type="text" />}</editUserForm.AppField>
+                <editUserForm.AppField name="email">{field => <field.TextField label="E-mail" type="text" />}</editUserForm.AppField>
+                <editUserForm.AppField name="password">{field => <field.TextField label="Nieuw wachtwoord (optioneel)" type="password" placeholder="Laat leeg om niet te wijzigen" />}</editUserForm.AppField>
+                <editUserForm.AppField name="role">{field => (
+                  <div>
+                    <Label htmlFor={field.name}>Rol</Label>
+                    <Select value={field.state.value} onValueChange={(value) => field.handleChange(value as "Admin" | "Employee")}>
+                      <SelectTrigger><SelectValue placeholder="Selecteer rol" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Employee">Employee</SelectItem>
+                        <SelectItem value="Admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {field.state.meta.errors.length > 0 && <p className="text-sm text-destructive mt-1">{String(field.state.meta.errors[0])}</p>}
+                  </div>
+                )}</editUserForm.AppField>
               </div>
               <DialogFooter>
-                <editUserForm.Subscribe
-                  selector={(state) => state.canSubmit}
-                  children={(canSubmit) => (
-                    <Button type="submit" disabled={!canSubmit}>
-                      Opslaan
-                    </Button>
-                  )}
-                />
+                <editUserForm.Subscribe selector={state => state.canSubmit}>{canSubmit => (
+                  <Button type="submit" disabled={!canSubmit}>Opslaan</Button>
+                )}</editUserForm.Subscribe>
               </DialogFooter>
             </form>
           </editUserForm.AppForm>

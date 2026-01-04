@@ -5,14 +5,12 @@ export const officeAttendanceSchema = z.object({
   userId: z.string(),
   date: z.string(),
   status: z.enum(["Present", "Absent", "Remote", "Late"]),
-  createdAt: z.string().optional(),
 });
 
 export type OfficeAttendance = z.infer<typeof officeAttendanceSchema>;
 
-
 export const createAttendanceSchema = z.object({
-  date: z.string().min(1, "Datum is verplicht"),
+  date: z.string().min(1),
   status: z.enum(["Present", "Absent", "Remote", "Late"]),
 });
 

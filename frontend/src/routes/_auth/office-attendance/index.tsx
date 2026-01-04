@@ -45,30 +45,35 @@ export function RouteComponent() {
       date: "",
       status: "Present" as "Present" | "Absent" | "Remote" | "Late",
     },
-    onSubmit: async (values: CreateAttendance) => {
-      try {
-        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-        const res = await fetch(`${API_BASE}/api/attendance`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(values),
-        });
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData?.message || "Fout bij registreren");
-        }
-        const newAttendance: OfficeAttendance = await res.json();
-        setAttendances(prev => [...prev, newAttendance].sort((a, b) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-        ));
-        toast.success("Aanwezigheid succesvol geregistreerd");
-        setIsAddDialogOpen(false);
-        addAttendanceForm.reset();
-      } catch (err: any) {
-        toast.error(err.message || "Fout bij registreren");
-      }
-    },
+    onSubmit: async ({ value }) => {
+  try {
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
+    const res = await fetch(`${API_BASE}/api/attendance`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(value),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData?.message || "Fout bij registreren");
+    }
+
+    const newAttendance: OfficeAttendance = await res.json();
+    setAttendances(prev =>
+      [...prev, newAttendance].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      )
+    );
+
+    toast.success("Aanwezigheid succesvol geregistreerd");
+    setIsAddDialogOpen(false);
+    addAttendanceForm.reset();
+  } catch (err: any) {
+    toast.error(err.message || "Fout bij registreren");
+  }
+},
     validators: { onSubmit: createAttendanceSchema },
   });
 

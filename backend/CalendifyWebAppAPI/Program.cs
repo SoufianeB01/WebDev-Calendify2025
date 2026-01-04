@@ -74,6 +74,7 @@ builder.Services.AddScoped<IRoomBookingService, RoomBookingService>();
 builder.Services.AddScoped<IEventParticipationService, EventParticipationService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<AdminService>();
+builder.Services.AddScoped<EmployeeService>();
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())

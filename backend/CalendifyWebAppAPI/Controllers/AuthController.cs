@@ -1,3 +1,11 @@
+using Microsoft.AspNetCore.Mvc;
+using CalendifyWebAppAPI.Services.Interfaces;
+using CalendifyWebAppAPI.Models;
+using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
+
+namespace CalendifyWebAppAPI.Controllers
+{
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
@@ -43,4 +51,5 @@ public class AuthController : ControllerBase
             role = HttpContext.Session.GetString("UserRole")
         });
     }
+}
 }
