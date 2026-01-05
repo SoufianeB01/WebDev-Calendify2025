@@ -1,12 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router';
-// import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router"
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from "react";
 import { CalendarIcon, DoorOpenIcon, MapPinIcon, PencilIcon, PlusIcon, TrashIcon, UsersIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { Room } from "@/types/Room";
+import { useAuth } from "@/lib/auth";
 import { simpleRoomSchema } from "@/types/Room";
 import { createRoomBookingSchema } from "@/types/RoomBooking";
-import mockData from "@/data/mock.json";
 import { useAppForm } from "@/hooks/use-app-form";
 
 import { Badge } from "@/components/ui/badge";
@@ -19,17 +19,116 @@ export const Route = createFileRoute('/_auth/rooms/')({
 });
 
 function RouteComponent() {
-  // Mock rooms data from JSON
-  const [rooms, setRooms] = useState<Array<Room>>(mockData.rooms);
-  // const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
 
-  const [isAdmin] = useState(true); // Mock admin status
+  const { data: rooms = [] } = useQuery<Array<Room>>({
+    queryKey: ['rooms'],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/api/rooms`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch rooms');
+      return res.json();
+    }
+  });
+
+  const { isAdmin } = useAuth();
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isBookDialogOpen, setIsBookDialogOpen] = useState(false);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
+  // Mutations
+  const createRoomMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await fetch(`${API_BASE}/api/rooms`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to create room');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+      toast.success('Kamer succesvol aangemaakt');
+      setIsAddDialogOpen(false);
+      addRoomForm.reset();
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error('Fout bij het aanmaken van kamer');
+    },
+  });
+
+  const updateRoomMutation = useMutation({
+    mutationFn: async ({ roomId, data }: { roomId: number; data: any }) => {
+      const res = await fetch(`${API_BASE}/api/rooms/${roomId}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update room');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+      toast.success('Kamer succesvol bijgewerkt');
+      setIsEditDialogOpen(false);
+      setSelectedRoom(null);
+      editRoomForm.reset();
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error('Fout bij het bijwerken van kamer');
+    },
+  });
+
+  const deleteRoomMutation = useMutation({
+    mutationFn: async (roomId: number) => {
+      const res = await fetch(`${API_BASE}/api/rooms/${roomId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to delete room');
+      return roomId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+      toast.success('Kamer succesvol verwijderd');
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error('Fout bij het verwijderen van kamer');
+    },
+  });
+
+  const bookRoomMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await fetch(`${API_BASE}/api/RoomBooking`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to book room');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roomBookings'] });
+      toast.success('Kamer succesvol geboekt');
+      setIsBookDialogOpen(false);
+      setSelectedRoom(null);
+      bookRoomForm.reset();
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error('Fout bij het boeken van kamer');
+    },
+  });
+
+  // Forms
   const addRoomForm = useAppForm({
     defaultValues: {
       roomName: "",
@@ -37,38 +136,7 @@ function RouteComponent() {
       location: "",
     },
     onSubmit: ({ value }) => {
-      // TODO: Uncomment when backend endpoint is ready
-      // addRoomMutation.mutate(value, {
-      //   onSuccess: (newRoom) => {
-      //     setRooms([...rooms, newRoom]);
-      //     setIsAddDialogOpen(false);
-      //     addRoomForm.reset();
-      //     toast.success("Kamer succesvol aangemaakt");
-      //   },
-      //   onError: (error) => {
-      //     console.error('Error creating room:', error);
-      //     toast.error("Fout bij het aanmaken van kamer");
-      //   },
-      //   onSettled: () => {
-      //     queryClient.invalidateQueries({ queryKey: ['rooms'] });
-      //   },
-      // });
-      // return;
-
-      // Mock add
-      const newRoom: Room = {
-        ...value,
-        roomId: Math.max(...rooms.map(r => r.roomId)) + 1,
-        services: [],
-        isOnline: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setRooms([...rooms, newRoom]);
-      toast.success("Kamer succesvol aangemaakt (demo)");
-
-      setIsAddDialogOpen(false);
-      addRoomForm.reset();
+      createRoomMutation.mutate(value);
     },
     validators: {
       onSubmit: simpleRoomSchema,
@@ -83,35 +151,7 @@ function RouteComponent() {
     },
     onSubmit: ({ value }) => {
       if (!selectedRoom) return;
-
-      // TODO: Uncomment when backend endpoint is ready
-      // updateRoomMutation.mutate({ roomId: selectedRoom.roomId, data: value }, {
-      //   onSuccess: (updated) => {
-      //     setRooms(rooms.map(r => r.roomId === selectedRoom.roomId ? updated : r));
-      //     setIsEditDialogOpen(false);
-      //     setSelectedRoom(null);
-      //     editRoomForm.reset();
-      //     toast.success("Kamer succesvol bijgewerkt");
-      //   },
-      //   onError: (error) => {
-      //     console.error('Error updating room:', error);
-      //     toast.error("Fout bij het bijwerken van kamer");
-      //   },
-      //   onSettled: () => {
-      //     queryClient.invalidateQueries({ queryKey: ['rooms'] });
-      //   },
-      // });
-      // return;
-
-      // Mock update
-      setRooms(rooms.map(r =>
-        r.roomId === selectedRoom.roomId ? { ...r, ...value, updatedAt: new Date().toISOString() } : r
-      ));
-      toast.success("Kamer succesvol bijgewerkt (demo)");
-
-      setIsEditDialogOpen(false);
-      setSelectedRoom(null);
-      editRoomForm.reset();
+      updateRoomMutation.mutate({ roomId: selectedRoom.roomId, data: value });
     },
     validators: {
       onSubmit: simpleRoomSchema,
@@ -126,121 +166,14 @@ function RouteComponent() {
       endTime: "",
       purpose: "",
     },
-    onSubmit: ({ value: _value }) => {
+    onSubmit: ({ value }) => {
       if (!selectedRoom) return;
-
-      // TODO: Uncomment when backend endpoint is ready
-      // bookRoomMutation.mutate({ ..._value, roomId: selectedRoom.roomId }, {
-      //   onSuccess: () => {
-      //     setIsBookDialogOpen(false);
-      //     setSelectedRoom(null);
-      //     bookRoomForm.reset();
-      //     toast.success("Kamer succesvol geboekt");
-      //   },
-      //   onError: (error) => {
-      //     console.error('Error booking room:', error);
-      //     toast.error("Fout bij het boeken van kamer");
-      //   },
-      //   onSettled: () => {
-      //     queryClient.invalidateQueries({ queryKey: ['roomBookings'] });
-      //   },
-      // });
-      // return;
-
-      // Mock booking
-      toast.success("Kamer succesvol geboekt (demo)");
-
-      setIsBookDialogOpen(false);
-      setSelectedRoom(null);
-      bookRoomForm.reset();
+      bookRoomMutation.mutate({ ...value, roomId: selectedRoom.roomId });
     },
     validators: {
       onSubmit: createRoomBookingSchema,
     },
   });
-
-
-  // const addRoomMutation = useMutation({
-  //   mutationFn: async (data: Partial<Room>) => {
-  //     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-  //     const response = await fetch(`${API_BASE}/api/rooms`, {
-  //       method: 'POST',
-  //       mode: 'cors',
-  //       credentials: 'include',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify(data),
-  //     });
-  //     if (!response.ok) throw new Error('Failed to create room');
-  //     return response.json();
-  //   },
-  // });
-
-  // const updateRoomMutation = useMutation({
-  //   mutationFn: async ({ roomId, data }: { roomId: number; data: Partial<Room> }) => {
-  //     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-  //     const response = await fetch(`${API_BASE}/api/rooms/${roomId}`, {
-  //       method: 'PUT',
-  //       mode: 'cors',
-  //       credentials: 'include',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify(data),
-  //     });
-  //     if (!response.ok) throw new Error('Failed to update room');
-  //     return response.json();
-  //   },
-  // });
-
-  // const deleteRoomMutation = useMutation({
-  //   mutationFn: async (roomId: number) => {
-  //     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-  //     const response = await fetch(`${API_BASE}/api/rooms/${roomId}`, {
-  //       method: 'DELETE',
-  //       mode: 'cors',
-  //       credentials: 'include',
-  //     });
-  //     if (!response.ok) throw new Error('Failed to delete room');
-  //     return roomId;
-  //   },
-  // });
-
-  // const bookRoomMutation = useMutation({
-  //   mutationFn: async (data: Partial<RoomBooking> & { roomId: number }) => {
-  //     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-  //     const response = await fetch(`${API_BASE}/api/roombooking`, {
-  //       method: 'POST',
-  //       mode: 'cors',
-  //       credentials: 'include',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify(data),
-  //     });
-  //     if (!response.ok) throw new Error('Failed to book room');
-  //     return response.json();
-  //   },
-  // });
-
-  const handleDeleteRoom = (roomId: number) => {
-    if (!confirm("Weet u zeker dat u deze kamer wilt verwijderen?")) return;
-
-    // TODO: Uncomment when backend endpoint is ready
-    // deleteRoomMutation.mutate(roomId, {
-    //   onSuccess: (deletedRoomId) => {
-    //     setRooms(rooms.filter(r => r.roomId !== deletedRoomId));
-    //     toast.success("Kamer succesvol verwijderd");
-    //   },
-    //   onError: (error) => {
-    //     console.error('Error deleting room:', error);
-    //     toast.error("Fout bij het verwijderen van kamer");
-    //   },
-    //   onSettled: () => {
-    //     queryClient.invalidateQueries({ queryKey: ['rooms'] });
-    //   },
-    // });
-    // return;
-
-    // Mock delete
-    setRooms(rooms.filter(r => r.roomId !== roomId));
-    toast.success("Kamer succesvol verwijderd (demo)");
-  };
 
   const RoomCard = ({ room }: { room: Room }) => (
     <Card className="hover:shadow-lg transition-shadow">
@@ -284,7 +217,6 @@ function RouteComponent() {
           variant="outline"
           onClick={() => {
             setSelectedRoom(room);
-            setIsViewDialogOpen(true);
           }}
         >
           Details
@@ -308,7 +240,11 @@ function RouteComponent() {
             <Button
               size="sm"
               variant="destructive"
-              onClick={() => handleDeleteRoom(room.roomId)}
+              onClick={() => {
+                if (confirm("Weet u zeker dat u deze kamer wilt verwijderen?")) {
+                  deleteRoomMutation.mutate(room.roomId);
+                }
+              }}
             >
               <TrashIcon className="h-4 w-4" />
             </Button>
@@ -436,29 +372,6 @@ function RouteComponent() {
               </DialogFooter>
             </form>
           </editRoomForm.AppForm>
-        </DialogContent>
-      </Dialog>
-
-      {/* View Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selectedRoom?.roomName}</DialogTitle>
-          </DialogHeader>
-          {selectedRoom && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                  <span>Capaciteit: {selectedRoom.capacity} personen</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPinIcon className="h-4 w-4 text-muted-foreground" />
-                  <span>Locatie: {selectedRoom.location}</span>
-                </div>
-              </div>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
 
