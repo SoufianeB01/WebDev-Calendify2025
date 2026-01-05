@@ -1,8 +1,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using CalendifyWebAppAPI.Data;
 using CalendifyWebAppAPI.Models;
+using CalendifyWebAppAPI.Services.Interfaces;
 
 
 namespace CalendifyWebAppAPI.Services
@@ -10,10 +12,12 @@ namespace CalendifyWebAppAPI.Services
     public class EmployeeService
     {
         private readonly AppDbContext _context;
+        private readonly IAuthService _authService;
 
-        public EmployeeService(AppDbContext context)
+        public EmployeeService(AppDbContext context, IAuthService authService)
         {
             _context = context;
+            _authService = authService;
         }
 
         public async Task<List<Employee>> GetAllEmployeesAsync()
@@ -42,7 +46,7 @@ namespace CalendifyWebAppAPI.Services
             emp.Email = updated.Email;
             emp.Role = updated.Role;
             if (!string.IsNullOrEmpty(updated.Password))
-                emp.Password = updated.Password;
+                emp.Password = _authService.HashPassword(emp, updated.Password);
 
             await _context.SaveChangesAsync();
             return emp;
