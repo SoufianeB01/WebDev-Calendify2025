@@ -1,7 +1,6 @@
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate, useRouter } from "@tanstack/react-router";
 import { CalendarDays, CircleUserIcon, DoorOpen, LogOut, ShieldUser, UserCheck } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ComponentType } from "react";
 import logo from "@/assets/logo.png";
 
@@ -48,37 +47,46 @@ interface CurrentUser {
 export default function AppSidebar() {
     const location = useLocation();
     const navigate = useNavigate();
+    const router = useRouter();
     const queryClient = useQueryClient();
-    const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
-
     const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5143";
 
-    useEffect(() => {
-        const fetchCurrentUser = async () => {
-            try {
-                const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: "include" });
-                if (!res.ok) throw new Error("Geen actieve sessie");
-                const data: CurrentUser = await res.json();
-                setCurrentUser(data);
-            } catch (err) {
-                console.error(err);
-                setCurrentUser(null);
-            }
-        };
-        fetchCurrentUser();
-    }, []);
+    const { data: currentUser = null } = useQuery({
+        queryKey: ['auth', 'me'],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: "include" });
+            if (!res.ok) throw new Error("Geen actieve sessie");
+            return res.json() as Promise<CurrentUser>;
+        },
+        retry: false,
+    });
 
-    const handleLogout = async () => {
-        try {
-            await fetch(`${API_BASE}/api/auth/logout`, {
+    const logoutMutation = useMutation({
+        mutationFn: async () => {
+            const res = await fetch(`${API_BASE}/api/auth/logout`, {
                 method: 'POST',
                 credentials: 'include',
             });
-        } catch (err) {
-            console.error('Logout failed:', err);
-        }
-        await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
-        navigate({ to: "/login" });
+            if (!res.ok) throw new Error('Logout failed');
+            return res.json();
+        },
+        onSuccess: async () => {
+            queryClient.clear();
+            // Invalidate router to clear cached data
+            await router.invalidate();
+            navigate({ to: "/login" });
+        },
+        onError: async (error) => {
+            console.error('Logout failed:', error);
+            // Even on error, clear cache and redirect
+            queryClient.clear();
+            await router.invalidate();
+            navigate({ to: "/login" });
+        },
+    });
+
+    const handleLogout = () => {
+        logoutMutation.mutate();
     };
 
     const visibleItems = items.filter(item => !item.adminOnly || currentUser?.role === "Admin");
