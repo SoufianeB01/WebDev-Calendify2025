@@ -63,6 +63,16 @@ namespace CalendifyWebAppAPI.Controllers
         public async Task<IActionResult> Create([FromBody] Event ev)
         {
             if (!IsAdmin()) return Unauthorized(new { message = "Admin privileges required" });
+
+            // Set CreatedBy from session
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
+                return Unauthorized(new { message = "User not authenticated" });
+
+            if (!Guid.TryParse(userIdStr, out Guid userId))
+                return BadRequest(new { message = "Invalid user ID in session" });
+
+            ev.CreatedBy = userId;
             var created = await _eventService.CreateEventAsync(ev);
             return Ok(created);
         }

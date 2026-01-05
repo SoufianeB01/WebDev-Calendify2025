@@ -25,6 +25,13 @@ namespace CalendifyWebAppAPI.Services
         {
             if (ev.EventId == Guid.Empty)
                 ev.EventId = Guid.NewGuid();
+
+            // Ensure DateTime is in UTC for PostgreSQL
+            if (ev.EventDate.Kind == DateTimeKind.Unspecified)
+                ev.EventDate = DateTime.SpecifyKind(ev.EventDate, DateTimeKind.Utc);
+            else if (ev.EventDate.Kind == DateTimeKind.Local)
+                ev.EventDate = ev.EventDate.ToUniversalTime();
+
             _context.Events.Add(ev);
             await _context.SaveChangesAsync();
             return ev;
@@ -36,7 +43,15 @@ namespace CalendifyWebAppAPI.Services
             if (existing == null) return null;
             existing.Title = ev.Title;
             existing.Description = ev.Description;
-            existing.EventDate = ev.EventDate;
+
+            // Ensure DateTime is in UTC for PostgreSQL
+            if (ev.EventDate.Kind == DateTimeKind.Unspecified)
+                existing.EventDate = DateTime.SpecifyKind(ev.EventDate, DateTimeKind.Utc);
+            else if (ev.EventDate.Kind == DateTimeKind.Local)
+                existing.EventDate = ev.EventDate.ToUniversalTime();
+            else
+                existing.EventDate = ev.EventDate;
+
             existing.StartTime = ev.StartTime;
             existing.EndTime = ev.EndTime;
             existing.Location = ev.Location;
