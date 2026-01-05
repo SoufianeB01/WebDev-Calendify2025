@@ -74,38 +74,22 @@ export function CalendarTableHeader({ events: externalEvents }: { events?: Array
 
     // Update events when externalEvents change
     useEffect(() => {
-        if (externalEvents && externalEvents.length > 0) {
+        if (externalEvents) {
             setEvents(externalEvents);
         }
     }, [externalEvents]);
 
-    // Save events to localStorage whenever they change
-    const saveEvents = (newEvents: Array<CalendarEvent>) => {
-        try {
-            localStorage.setItem('events', JSON.stringify(newEvents));
-            setEvents(newEvents);
-        } catch (error) {
-            console.error('Failed to save events to localStorage:', error);
-        }
-    };
-
-    const handleEventAdd = (event: CalendarEvent) => {
-        const newEvents = [...events, event];
-        saveEvents(newEvents);
-    };
-
     const handleEventUpdate = (updatedEvent: CalendarEvent) => {
-        const newEvents = events.map(event =>
+        // Update local state optimistically
+        setEvents(prev => prev.map(event =>
             event.id === updatedEvent.id ? updatedEvent : event,
-        );
-        saveEvents(newEvents);
+        ));
     };
 
     return (
         <>
             <EventCalendar
                 events={events}
-                onEventAdd={handleEventAdd}
                 onEventUpdate={handleEventUpdate}
             />
         </>
