@@ -31,7 +31,7 @@ export function RouteComponent() {
       const res = await fetch(`${API_BASE}/api/attendance`, {
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to fetch attendance');
+      if (!res.ok) throw new Error('Kon aanwezigheid niet ophalen');
       return res.json() as Promise<Array<OfficeAttendance>>;
     },
   });
@@ -68,7 +68,7 @@ export function RouteComponent() {
         method: 'DELETE',
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to delete attendance');
+      if (!res.ok) throw new Error('Kon aanwezigheid niet verwijderen');
       return attendanceId;
     },
     onSuccess: () => {

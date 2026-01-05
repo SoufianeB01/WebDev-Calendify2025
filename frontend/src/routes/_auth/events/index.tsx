@@ -46,7 +46,7 @@ function RouteComponent() {
     queryKey: ['events'],
     queryFn: async () => {
       const res = await fetch(`${API_BASE}/api/Events`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to fetch events');
+      if (!res.ok) throw new Error('Kon evenementen niet ophalen');
       return res.json();
     }
   });
@@ -90,7 +90,7 @@ function RouteComponent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to create event');
+      if (!res.ok) throw new Error('Kon evenement niet aanmaken');
       return res.json();
     },
     onSuccess: () => {
@@ -113,7 +113,7 @@ function RouteComponent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to update event');
+      if (!res.ok) throw new Error('Kon evenement niet bijwerken');
       return res.json();
     },
     onSuccess: () => {
@@ -135,7 +135,7 @@ function RouteComponent() {
         method: 'DELETE',
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to delete event');
+      if (!res.ok) throw new Error('Kon evenement niet verwijderen');
       return eventId;
     },
     onSuccess: () => {
@@ -154,7 +154,7 @@ function RouteComponent() {
         method: 'GET',
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to register for event');
+      if (!res.ok) throw new Error('Kon niet inschrijven voor evenement');
       return res.json();
     },
     onSuccess: () => {
@@ -173,7 +173,7 @@ function RouteComponent() {
         method: 'DELETE',
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to unregister from event');
+      if (!res.ok) throw new Error('Kon uitschrijving niet voltooien');
       return eventId;
     },
     onSuccess: () => {
@@ -194,7 +194,7 @@ function RouteComponent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating, comment }),
       });
-      if (!res.ok) throw new Error('Failed to submit review');
+      if (!res.ok) throw new Error('Kon beoordeling niet indienen');
       return res.json();
     },
     onSuccess: (_, variables) => {

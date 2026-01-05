@@ -65,7 +65,7 @@ function RouteComponent() {
     queryKey: ['events'],
     queryFn: async () => {
       const res = await fetch(`${API_BASE}/api/Events`, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch events");
+      if (!res.ok) throw new Error("Kon evenementen niet ophalen");
       return res.json();
     },
   });
@@ -119,7 +119,7 @@ function RouteComponent() {
     queryKey: ['users'],
     queryFn: async () => {
       const res = await fetch(`${API_BASE}/api/employees`, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch employees");
+      if (!res.ok) throw new Error("Kon medewerkers niet ophalen");
       return res.json();
     },
   });
@@ -133,7 +133,7 @@ function RouteComponent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to create event");
+      if (!res.ok) throw new Error("Kon evenement niet aanmaken");
       return res.json();
     },
     onSuccess: () => {
@@ -155,7 +155,7 @@ function RouteComponent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to update event");
+      if (!res.ok) throw new Error("Kon evenement niet bijwerken");
       return res.json();
     },
     onSuccess: () => {
@@ -175,7 +175,7 @@ function RouteComponent() {
         method: "DELETE",
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to delete event");
+      if (!res.ok) throw new Error("Kon evenement niet verwijderen");
       return eventId;
     },
     onSuccess: () => {
@@ -198,7 +198,7 @@ function RouteComponent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to create employee");
+      if (!res.ok) throw new Error("Kon medewerker niet aanmaken");
       return res.json();
     },
     onSuccess: () => {
@@ -223,7 +223,7 @@ function RouteComponent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error("Failed to update employee");
+      if (!res.ok) throw new Error("Kon medewerker niet bijwerken");
       return res.json();
     },
     onSuccess: () => {
@@ -244,7 +244,7 @@ function RouteComponent() {
         method: "DELETE",
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to delete employee");
+      if (!res.ok) throw new Error("Kon medewerker niet verwijderen");
       return userId;
     },
     onSuccess: () => {

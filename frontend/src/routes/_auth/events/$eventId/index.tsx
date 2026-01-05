@@ -34,7 +34,7 @@ function RouteComponent() {
         queryKey: ['event', eventId],
         queryFn: async () => {
             const res = await fetch(`${API_BASE}/api/Events/${eventId}`, { credentials: 'include' });
-            if (!res.ok) throw new Error('Failed to fetch event');
+            if (!res.ok) throw new Error('Kon evenement niet ophalen');
             return res.json();
         },
     });
@@ -59,7 +59,7 @@ function RouteComponent() {
                 method: 'GET',
                 credentials: 'include',
             });
-            if (!res.ok) throw new Error('Failed to register for event');
+            if (!res.ok) throw new Error('Kon niet inschrijven voor evenement');
             return res.json();
         },
         onSuccess: () => {
@@ -80,7 +80,7 @@ function RouteComponent() {
                 method: 'DELETE',
                 credentials: 'include',
             });
-            if (!res.ok) throw new Error('Failed to unregister from event');
+            if (!res.ok) throw new Error('Kon uitschrijving niet voltooien');
             return eventId;
         },
         onSuccess: () => {
@@ -103,7 +103,7 @@ function RouteComponent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ rating, comment }),
             });
-            if (!res.ok) throw new Error('Failed to submit review');
+            if (!res.ok) throw new Error('Kon beoordeling niet indienen');
             return res.json();
         },
         onSuccess: () => {
