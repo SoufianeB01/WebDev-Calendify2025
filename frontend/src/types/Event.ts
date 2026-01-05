@@ -33,9 +33,18 @@ export const createEventSchema = z.object({
 
 export type CreateEvent = z.infer<typeof createEventSchema>;
 
-// Rate event schema
-export const rateEventSchema = z.object({
-    rating: z.number().min(1, "Minimale waardering is 1").max(5, "Maximale waardering is 5"),
+// Review event schema with required rating and comment
+export const reviewEventSchema = z.object({
+    rating: z.number().min(1, "Beoordeling is verplicht").max(5, "Maximale waardering is 5"),
+    comment: z.string().min(1, "Opmerking is verplicht").max(500, "Opmerking mag maximaal 500 tekens bevatten"),
 });
 
-export type RateEvent = z.infer<typeof rateEventSchema>;
+export type ReviewEvent = z.infer<typeof reviewEventSchema>;
+
+export type Review = {
+    userId: string;
+    userName: string;
+    rating: number;
+    comment: string;
+    date: string;
+}

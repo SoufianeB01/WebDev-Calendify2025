@@ -40,7 +40,6 @@ namespace CalendifyWebAppAPI.Services
             existing.StartTime = ev.StartTime;
             existing.EndTime = ev.EndTime;
             existing.Location = ev.Location;
-            existing.CreatedBy = ev.CreatedBy;
             await _context.SaveChangesAsync();
             return existing;
         }

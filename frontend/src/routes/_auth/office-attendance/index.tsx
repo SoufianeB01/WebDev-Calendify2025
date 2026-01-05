@@ -1,9 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarIcon, CheckCircleIcon, ClockIcon, PieChartIcon, PlusIcon, TrashIcon, XCircleIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import type { CreateAttendance, OfficeAttendance } from "@/types/OfficeAttendance";
+import type { OfficeAttendance } from "@/types/OfficeAttendance";
 import { createAttendanceSchema } from "@/types/OfficeAttendance";
 import { useAppForm } from "@/hooks/use-app-form";
 import { Badge } from "@/components/ui/badge";
@@ -20,87 +21,85 @@ export const Route = createFileRoute('/_auth/office-attendance/')({
 });
 
 export function RouteComponent() {
-  const [attendances, setAttendances] = useState<Array<OfficeAttendance>>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
 
-  useEffect(() => {
-    const fetchAttendances = async () => {
-      try {
-        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-        const res = await fetch(`${API_BASE}/api/attendance`, {
-          credentials: 'include',
-        });
-        if (!res.ok) throw new Error('Failed to fetch attendance');
-        const data: Array<OfficeAttendance> = await res.json();
-        setAttendances(data);
-      } catch {
-        toast.error("Kon aanwezigheid niet ophalen");
+  const { data: attendances = [] } = useQuery({
+    queryKey: ['attendances'],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/api/attendance`, {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to fetch attendance');
+      return res.json() as Promise<Array<OfficeAttendance>>;
+    },
+  });
+
+  const createAttendanceMutation = useMutation({
+    mutationFn: async (data: { date: string; status: "Present" | "Absent" | "Remote" | "Late" }) => {
+      const res = await fetch(`${API_BASE}/api/attendance`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData?.message || "Fout bij registreren");
       }
-    };
-    fetchAttendances();
-  }, []);
+      return res.json() as Promise<OfficeAttendance>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['attendances'] });
+      toast.success("Aanwezigheid succesvol geregistreerd");
+      setIsAddDialogOpen(false);
+      addAttendanceForm.reset();
+    },
+    onError: (error: Error) => {
+      console.error(error);
+      toast.error(error.message || "Fout bij registreren");
+    },
+  });
+
+  const deleteAttendanceMutation = useMutation({
+    mutationFn: async (attendanceId: string) => {
+      const res = await fetch(`${API_BASE}/api/attendance/${attendanceId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to delete attendance');
+      return attendanceId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['attendances'] });
+      toast.success("Aanwezigheid succesvol verwijderd");
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error("Fout bij verwijderen");
+    },
+  });
 
   const addAttendanceForm = useAppForm({
     defaultValues: {
       date: "",
       status: "Present" as "Present" | "Absent" | "Remote" | "Late",
     },
-    onSubmit: async ({ value }) => {
-  try {
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-    const res = await fetch(`${API_BASE}/api/attendance`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(value),
-    });
-
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData?.message || "Fout bij registreren");
-    }
-
-    const newAttendance: OfficeAttendance = await res.json();
-    setAttendances(prev =>
-      [...prev, newAttendance].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      )
-    );
-
-    toast.success("Aanwezigheid succesvol geregistreerd");
-    setIsAddDialogOpen(false);
-    addAttendanceForm.reset();
-  } catch (err: any) {
-    toast.error(err.message || "Fout bij registreren");
-  }
-},
+    onSubmit: ({ value }) => {
+      createAttendanceMutation.mutate(value);
+    },
     validators: { onSubmit: createAttendanceSchema },
   });
-
-  const handleDeleteAttendance = async (attendanceId: string) => {
-    if (!confirm("Weet u zeker dat u deze aanwezigheid wilt verwijderen?")) return;
-    try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-      const res = await fetch(`${API_BASE}/api/attendance/${attendanceId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('Failed to delete attendance');
-      setAttendances(prev => prev.filter(a => a.attendanceId !== attendanceId));
-      toast.success("Aanwezigheid succesvol verwijderd");
-    } catch {
-      toast.error("Fout bij verwijderen");
-    }
-  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Present":
-        return <Badge className="bg-green-500"><CheckCircleIcon className="h-3 w-3 mr-1" /> Aanwezig</Badge>;
+        return <Badge variant="default" className="bg-green-600 hover:bg-green-700"><CheckCircleIcon className="h-3 w-3 mr-1" /> Aanwezig</Badge>;
       case "Remote":
-        return <Badge className="bg-blue-500"><ClockIcon className="h-3 w-3 mr-1" /> Op afstand</Badge>;
+        return <Badge variant="default" className="bg-blue-600 hover:bg-blue-700"><ClockIcon className="h-3 w-3 mr-1" /> Op afstand</Badge>;
       case "Late":
-        return <Badge className="bg-yellow-500"><ClockIcon className="h-3 w-3 mr-1" /> Te laat</Badge>;
+        return <Badge variant="default" className="bg-yellow-600 hover:bg-yellow-700"><ClockIcon className="h-3 w-3 mr-1" /> Te laat</Badge>;
       case "Absent":
         return <Badge variant="destructive"><XCircleIcon className="h-3 w-3 mr-1" /> Afwezig</Badge>;
       default:
@@ -126,54 +125,60 @@ export function RouteComponent() {
             </Button>
           </DialogTrigger>
           <DialogContent>
-          <addAttendanceForm.AppForm>
-            <form onSubmit={addAttendanceForm.handleSubmit} noValidate>
-              <DialogHeader>
-                <DialogTitle>Aanwezigheid registreren</DialogTitle>
-                <p className="text-sm text-muted-foreground">Registreer uw aanwezigheid op kantoor</p>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <addAttendanceForm.AppField
-                  name="date"
-                  children={(field) => <field.TextField label="Datum" type="date" />}
-                />
-                <addAttendanceForm.AppField
-                  name="status"
-                  children={(field) => (
-                    <div>
-                      <Label htmlFor={field.name}>Status</Label>
-                      <Select
-                        value={field.state.value}
-                        onValueChange={(value) => field.handleChange(value as any)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecteer status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Present">Aanwezig</SelectItem>
-                          <SelectItem value="Remote">Op afstand</SelectItem>
-                          <SelectItem value="Late">Te laat</SelectItem>
-                          <SelectItem value="Absent">Afwezig</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {field.state.meta.errors.length > 0 && (
-                        <p className="text-sm text-destructive mt-1">{String(field.state.meta.errors[0])}</p>
-                      )}
-                    </div>
-                  )}
-                />
-              </div>
-              <DialogFooter>
-                <addAttendanceForm.Subscribe
-                  selector={state => state.canSubmit}
-                  children={(canSubmit) => (
-                    <Button type="submit" disabled={!canSubmit}>Registreren</Button>
-                  )}
-                />
-              </DialogFooter>
-            </form>
-          </addAttendanceForm.AppForm>
-        </DialogContent>
+            <addAttendanceForm.AppForm>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  addAttendanceForm.handleSubmit();
+                }}
+                noValidate
+              >
+                <DialogHeader>
+                  <DialogTitle>Aanwezigheid registreren</DialogTitle>
+                  <p className="text-sm text-muted-foreground">Registreer uw aanwezigheid op kantoor</p>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <addAttendanceForm.AppField
+                    name="date"
+                    children={(field) => <field.TextField label="Datum" type="date" />}
+                  />
+                  <addAttendanceForm.AppField
+                    name="status"
+                    children={(field) => (
+                      <div>
+                        <Label htmlFor={field.name}>Status</Label>
+                        <Select
+                          value={field.state.value}
+                          onValueChange={(value) => field.handleChange(value as any)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecteer status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Present">Aanwezig</SelectItem>
+                            <SelectItem value="Remote">Op afstand</SelectItem>
+                            <SelectItem value="Late">Te laat</SelectItem>
+                            <SelectItem value="Absent">Afwezig</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {field.state.meta.errors.length > 0 && (
+                          <p className="text-sm text-destructive mt-1">{String(field.state.meta.errors[0])}</p>
+                        )}
+                      </div>
+                    )}
+                  />
+                </div>
+                <DialogFooter>
+                  <addAttendanceForm.Subscribe
+                    selector={state => state.canSubmit}
+                    children={(canSubmit) => (
+                      <Button type="submit" disabled={!canSubmit}>Registreren</Button>
+                    )}
+                  />
+                </DialogFooter>
+              </form>
+            </addAttendanceForm.AppForm>
+          </DialogContent>
 
         </Dialog>
       </div>
@@ -273,7 +278,15 @@ export function RouteComponent() {
                     </TableCell>
                     <TableCell>{getStatusBadge(a.status)}</TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="ghost" onClick={() => handleDeleteAttendance(a.attendanceId)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          if (confirm("Weet u zeker dat u deze aanwezigheid wilt verwijderen?")) {
+                            deleteAttendanceMutation.mutate(a.attendanceId);
+                          }
+                        }}
+                      >
                         <TrashIcon className="h-4 w-4" />
                       </Button>
                     </TableCell>
