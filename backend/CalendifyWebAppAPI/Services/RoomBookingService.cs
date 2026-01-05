@@ -26,8 +26,15 @@ namespace CalendifyWebAppAPI.Services
             else if (booking.BookingDate.Kind == DateTimeKind.Local)
                 booking.BookingDate = booking.BookingDate.ToUniversalTime();
             
-            var exists = await _context.RoomBookings.FirstOrDefaultAsync(r => r.RoomId == booking.RoomId && r.BookingDate == booking.BookingDate && r.StartTime == booking.StartTime);
-            if (exists != null) return null;
+            // Check for overlapping bookings: new booking overlaps if it starts before an existing booking ends
+            // and ends after an existing booking starts
+            var hasOverlap = await _context.RoomBookings.AnyAsync(r => 
+                r.RoomId == booking.RoomId && 
+                r.BookingDate.Date == booking.BookingDate.Date &&
+                r.StartTime < booking.EndTime && 
+                booking.StartTime < r.EndTime);
+            
+            if (hasOverlap) return null;
 
             _context.RoomBookings.Add(booking);
             await _context.SaveChangesAsync();
@@ -37,6 +44,20 @@ namespace CalendifyWebAppAPI.Services
         public async Task<List<RoomBooking>> GetUserBookingsAsync(Guid userId)
         {
             return await _context.RoomBookings.Where(r => r.UserId == userId).ToListAsync();
+        }
+
+        public async Task<List<RoomBooking>> GetAllBookingsAsync()
+        {
+            return await _context.RoomBookings.OrderBy(r => r.BookingDate).ThenBy(r => r.StartTime).ToListAsync();
+        }
+
+        public async Task<List<RoomBooking>> GetRoomBookingsAsync(Guid roomId)
+        {
+            return await _context.RoomBookings
+                .Where(r => r.RoomId == roomId)
+                .OrderBy(r => r.BookingDate)
+                .ThenBy(r => r.StartTime)
+                .ToListAsync();
         }
 
         public async Task<RoomBooking?> UpdateBookingAsync(Guid roomId, Guid userId, RoomBooking updated)

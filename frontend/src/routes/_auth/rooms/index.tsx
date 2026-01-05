@@ -26,7 +26,16 @@ function RouteComponent() {
     queryKey: ['rooms'],
     queryFn: async () => {
       const res = await fetch(`${API_BASE}/api/rooms`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to fetch rooms');
+      if (!res.ok) throw new Error('Kon kamers niet ophalen');
+      return res.json();
+    }
+  });
+
+  const { data: allBookings = [] } = useQuery<Array<any>>({
+    queryKey: ['allRoomBookings'],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/api/RoomBooking`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Kon boekingen niet ophalen');
       return res.json();
     }
   });
@@ -46,7 +55,7 @@ function RouteComponent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to create room');
+      if (!res.ok) throw new Error('Kon kamer niet aanmaken');
       return res.json();
     },
     onSuccess: () => {
@@ -62,14 +71,14 @@ function RouteComponent() {
   });
 
   const updateRoomMutation = useMutation({
-    mutationFn: async ({ roomId, data }: { roomId: number; data: any }) => {
+    mutationFn: async ({ roomId, data }: { roomId: string; data: any }) => {
       const res = await fetch(`${API_BASE}/api/rooms/${roomId}`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to update room');
+      if (!res.ok) throw new Error('Kon kamer niet bijwerken');
       return res.json();
     },
     onSuccess: () => {
@@ -86,12 +95,12 @@ function RouteComponent() {
   });
 
   const deleteRoomMutation = useMutation({
-    mutationFn: async (roomId: number) => {
+    mutationFn: async (roomId: string) => {
       const res = await fetch(`${API_BASE}/api/rooms/${roomId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Failed to delete room');
+      if (!res.ok) throw new Error('Kon kamer niet verwijderen');
       return roomId;
     },
     onSuccess: () => {
@@ -112,19 +121,23 @@ function RouteComponent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to book room');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Kon kamer niet boeken');
+      }
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roomBookings'] });
+      queryClient.invalidateQueries({ queryKey: ['allRoomBookings'] });
       toast.success('Kamer succesvol geboekt');
       setIsBookDialogOpen(false);
       setSelectedRoom(null);
       bookRoomForm.reset();
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error(error);
-      toast.error('Fout bij het boeken van kamer');
+      toast.error(error.message || 'Fout bij het boeken van kamer');
     },
   });
 
@@ -160,7 +173,7 @@ function RouteComponent() {
 
   const bookRoomForm = useAppForm({
     defaultValues: {
-      roomId: 0,
+      roomId: "",
       bookingDate: "",
       startTime: "",
       endTime: "",
@@ -175,84 +188,105 @@ function RouteComponent() {
     },
   });
 
-  const RoomCard = ({ room }: { room: Room }) => (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <CardTitle className="flex items-center gap-2">
-            <DoorOpenIcon className="h-5 w-5" />
-            {room.roomName}
-          </CardTitle>
-          <Badge variant="secondary">{room.capacity} personen</Badge>
-        </div>
-        <CardDescription className="flex items-center gap-2">
-          <MapPinIcon className="h-4 w-4" />
-          {room.location}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <UsersIcon className="h-4 w-4" />
-          <span>Capaciteit: {room.capacity} personen</span>
-        </div>
-      </CardContent>
-      <CardFooter className="flex gap-2 flex-wrap">
-        <Button
-          size="sm"
-          onClick={() => {
-            setSelectedRoom(room);
-            bookRoomForm.setFieldValue("roomId", room.roomId);
-            bookRoomForm.setFieldValue("bookingDate", "");
-            bookRoomForm.setFieldValue("startTime", "");
-            bookRoomForm.setFieldValue("endTime", "");
-            bookRoomForm.setFieldValue("purpose", "");
-            setIsBookDialogOpen(true);
-          }}
-        >
-          <CalendarIcon className="h-4 w-4 mr-2" />
-          Boeken
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            setSelectedRoom(room);
-          }}
-        >
-          Details
-        </Button>
+  const RoomCard = ({ room }: { room: Room }) => {
+    const roomBookings = allBookings.filter((b: any) => b.roomId === room.roomId);
+    const today = new Date().toISOString().split('T')[0];
+    const todayBookings = roomBookings
+      .filter((b: any) => b.bookingDate.split('T')[0] === today)
+      .sort((a: any, b: any) => a.startTime.localeCompare(b.startTime));
 
-        {isAdmin && (
-          <>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setSelectedRoom(room);
-                editRoomForm.setFieldValue("roomName", room.roomName);
-                editRoomForm.setFieldValue("capacity", room.capacity);
-                editRoomForm.setFieldValue("location", room.location);
-                setIsEditDialogOpen(true);
-              }}
-            >
-              <PencilIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => {
-                if (confirm("Weet u zeker dat u deze kamer wilt verwijderen?")) {
-                  deleteRoomMutation.mutate(room.roomId);
-                }
-              }}
-            >
-              <TrashIcon className="h-4 w-4" />
-            </Button>
-          </>
-        )}
-      </CardFooter>
-    </Card>
-  );
+    return (
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <CardTitle className="flex items-center gap-2">
+              <DoorOpenIcon className="h-5 w-5" />
+              {room.roomName}
+            </CardTitle>
+            <Badge variant="secondary">{room.capacity} personen</Badge>
+          </div>
+          <CardDescription className="flex items-center gap-2">
+            <MapPinIcon className="h-4 w-4" />
+            {room.location}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+            <UsersIcon className="h-4 w-4" />
+            <span>Capaciteit: {room.capacity} personen</span>
+          </div>
+          {todayBookings.length > 0 && (
+            <div className="bg-secondary mt-2 p-2 bg-muted rounded-md">
+              <p className="text-xs font-semibold mb-1">Vandaag geboekt:</p>
+              <div className="space-y-1">
+                {todayBookings.map((booking: any, idx: number) => (
+                  <div key={idx} className="text-xs">
+                    {booking.startTime} - {booking.endTime}
+                    {booking.purpose && ` |  ${booking.purpose}`}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="flex gap-2 flex-wrap">
+          <Button
+            size="sm"
+            onClick={() => {
+              setSelectedRoom(room);
+              bookRoomForm.setFieldValue("roomId", room.roomId);
+              bookRoomForm.setFieldValue("bookingDate", "");
+              bookRoomForm.setFieldValue("startTime", "");
+              bookRoomForm.setFieldValue("endTime", "");
+              bookRoomForm.setFieldValue("purpose", "");
+              setIsBookDialogOpen(true);
+            }}
+          >
+            <CalendarIcon className="h-4 w-4 mr-2" />
+            Boeken
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setSelectedRoom(room);
+            }}
+          >
+            Details
+          </Button>
+
+          {isAdmin && (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setSelectedRoom(room);
+                  editRoomForm.setFieldValue("roomName", room.roomName);
+                  editRoomForm.setFieldValue("capacity", room.capacity);
+                  editRoomForm.setFieldValue("location", room.location);
+                  setIsEditDialogOpen(true);
+                }}
+              >
+                <PencilIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  if (confirm("Weet u zeker dat u deze kamer wilt verwijderen?")) {
+                    deleteRoomMutation.mutate(room.roomId);
+                  }
+                }}
+              >
+                <TrashIcon className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+        </CardFooter>
+      </Card>
+    );
+  };
 
   return (
     <div className="container mx-auto p-6">
@@ -325,6 +359,54 @@ function RouteComponent() {
           rooms.map((room) => <RoomCard key={room.roomId} room={room} />)
         )}
       </div>
+
+      {/* Upcoming Bookings Section */}
+      {allBookings.length > 0 && (
+        <div className="mt-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Aankomende boekingen</CardTitle>
+              <CardDescription>Overzicht van toekomstige kamerboekingen</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {allBookings
+                  .filter((booking: any) => {
+                    // Parse the booking date and time
+                    const bookingDate = booking.bookingDate.split('T')[0];
+                    const bookingDateTime = new Date(bookingDate + 'T' + booking.endTime);
+                    const now = new Date();
+                    // Show bookings that haven't ended yet
+                    return bookingDateTime > now;
+                  })
+                  .sort((a: any, b: any) => {
+                    const dateA = new Date(a.bookingDate.split('T')[0] + 'T' + a.startTime);
+                    const dateB = new Date(b.bookingDate.split('T')[0] + 'T' + b.startTime);
+                    return dateA.getTime() - dateB.getTime();
+                  })
+                  .map((booking: any, idx: number) => {
+                    const room = rooms.find((r) => r.roomId === booking.roomId);
+                    const bookingDate = new Date(booking.bookingDate.split('T')[0]).toLocaleDateString('nl-NL');
+                    return (
+                      <div key={idx} className="bg-secondary flex items-center justify-between p-3 bg-muted rounded-md">
+                        <div>
+                          <p className="font-semibold">{room?.roomName || 'Onbekende kamer'}</p>
+                          <p className="text-sm">
+                            {bookingDate} | {booking.startTime} - {booking.endTime}
+                          </p>
+                          {booking.purpose && (
+                            <p className="text-sm">{booking.purpose}</p>
+                          )}
+                        </div>
+                        <Badge variant="default">{room?.location}</Badge>
+                      </div>
+                    );
+                  })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

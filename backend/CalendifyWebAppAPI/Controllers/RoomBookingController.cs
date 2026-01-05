@@ -27,7 +27,7 @@ namespace CalendifyWebAppAPI.Controllers
             if (booking.UserId != userId) return Unauthorized();
 
             var booked = await _service.BookRoomAsync(booking);
-            if (booked == null) return BadRequest(new { message = "Room occupied" });
+            if (booked == null) return Conflict(new { message = "Deze kamer is al geboekt voor de geselecteerde tijd" });
             return Ok(booked);
         }
 

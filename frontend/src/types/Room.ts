@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Room schema
 export const roomSchema = z.object({
-    roomId: z.number(),
+    roomId: z.string().uuid("Room ID must be a valid UUID"),
     roomName: z.string().min(1, "Kamernaam is verplicht").max(100, "Kamernaam mag maximaal 100 tekens bevatten"),
     capacity: z.number().min(1, "Capaciteit moet minimaal 1 zijn").max(1000, "Capaciteit mag maximaal 1000 zijn"),
     location: z.string().min(1, "Locatie is verplicht").max(200, "Locatie mag maximaal 200 tekens bevatten"),
