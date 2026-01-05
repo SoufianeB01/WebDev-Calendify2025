@@ -35,14 +35,14 @@ export function RouteComponent() {
 
   const profileForm = useAppForm({
     defaultValues: { firstName: "", lastName: "", email: "" },
-    onSubmit: async (values: Partial<UserProfile>) => {
+    onSubmit: async ({ value }) => {
       if (!userData) return;
       try {
         const res = await fetch(`${API_BASE}/api/user/profile`, {
           method: "PUT",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
+          body: JSON.stringify(value),
         });
         if (!res.ok) throw new Error("Fout bij bijwerken profiel");
         const updated: UserProfile = await res.json();
@@ -59,13 +59,13 @@ export function RouteComponent() {
 
   const passwordForm = useAppForm({
     defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
-    onSubmit: async (values) => {
+    onSubmit: async ({ value }) => {
       try {
         const res = await fetch(`${API_BASE}/api/user/password`, {
           method: "PUT",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ currentPassword: values.currentPassword, newPassword: values.newPassword }),
+          body: JSON.stringify({ currentPassword: value.currentPassword, newPassword: value.newPassword }),
         });
         if (!res.ok) throw new Error("Fout bij wijzigen wachtwoord");
         passwordForm.reset();

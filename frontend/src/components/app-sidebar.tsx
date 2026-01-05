@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, CircleUserIcon, DoorOpen, LogOut, ShieldUser, UserCheck, Users } from "lucide-react";
+import { CalendarDays, CircleUserIcon, DoorOpen, LogOut, ShieldUser, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ComponentType } from "react";
 import logo from "@/assets/logo.png";
@@ -35,7 +35,6 @@ const items: Array<MenuItem> = [
     { title: "Evenementen", url: "/events", icon: CalendarDays },
     { title: "Kantoor aanwezigheid", url: "/office-attendance", icon: UserCheck },
     { title: "Kamers", url: "/rooms", icon: DoorOpen },
-    { title: "Gebruikers", url: "/users", icon: Users, adminOnly: true },
     { title: "Admin dashboard", url: "/admin", icon: ShieldUser, adminOnly: true },
 ];
 

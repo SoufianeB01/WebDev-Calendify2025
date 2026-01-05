@@ -34,20 +34,17 @@ import {
     useEventVisibility,
 
 } from '@/components/event-calendar';
-import { DefaultStartHour } from '@/components/event-calendar/constants';
 
 type MonthViewProps = {
     currentDate: Date;
     events: Array<CalendarEvent>;
     onEventSelect: (event: CalendarEvent) => void;
-    onEventCreate: (startTime: Date) => void;
 };
 
 export function MonthView({
     currentDate,
     events,
     onEventSelect,
-    onEventCreate,
 }: MonthViewProps) {
     const days = useMemo(() => {
         const monthStart = startOfMonth(currentDate);
@@ -142,11 +139,6 @@ export function MonthView({
                                     <DroppableCell
                                         id={cellId}
                                         date={day}
-                                        onClick={() => {
-                                            const startTime = new Date(day);
-                                            startTime.setHours(DefaultStartHour, 0, 0);
-                                            onEventCreate(startTime);
-                                        }}
                                     >
                                         <div className="group-data-today:bg-primary-foreground group-data-today:text-primary group-data-today:font-bold group-data-today:shadow-md mt-1 inline-flex size-6 items-center justify-center rounded-full text-sm text-foreground/80">
                                             {format(day, 'd', { locale: nl })}

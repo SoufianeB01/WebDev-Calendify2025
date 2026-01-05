@@ -5,7 +5,6 @@ import AppSidebar from "@/components/app-sidebar";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_auth")({
     beforeLoad: ({ location }) => {

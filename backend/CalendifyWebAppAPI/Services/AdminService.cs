@@ -49,7 +49,6 @@ namespace CalendifyWebAppAPI.Services
             var existing = await _context.Admins.FindAsync(id);
             if (existing == null) return (false, "Admin not found", null);
 
-            existing.UserId = updated.UserId;
             existing.Permissions = updated.Permissions;
             await _context.SaveChangesAsync();
             return (true, "", existing);
