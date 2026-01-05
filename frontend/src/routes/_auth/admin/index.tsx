@@ -70,15 +70,20 @@ function RouteComponent() {
   });
 
   // Convert events to calendar format
-  const calendarEvents: Array<CalendarEvent> = events.map(event => ({
-    id: event.eventId.toString(),
-    title: event.title,
-    description: event.description,
-    start: new Date(event.eventDate + 'T' + event.startTime),
-    end: new Date(event.eventDate + 'T' + event.endTime),
-    allDay: false,
-    color: 'sky' as const,
-  }));
+  const calendarEvents: Array<CalendarEvent> = events.map(event => {
+    const dateOnly = event.eventDate.split('T')[0];
+    const start = new Date(dateOnly + 'T' + event.startTime);
+    const end = new Date(dateOnly + 'T' + event.endTime);
+    return {
+      id: event.eventId.toString(),
+      title: event.title,
+      description: event.description,
+      start,
+      end,
+      allDay: false,
+      color: 'sky' as const,
+    };
+  });
 
   // Fetch users with useQuery
   const { data: users = [] } = useQuery<Array<User>>({
