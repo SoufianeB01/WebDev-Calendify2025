@@ -57,6 +57,13 @@ namespace CalendifyWebAppAPI.Controllers
             });
         }
 
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return Ok(new { message = "Logout successful" });
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] Employee employee)
         {

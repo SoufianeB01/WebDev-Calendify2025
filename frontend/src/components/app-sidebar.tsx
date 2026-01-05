@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { CalendarDays, CircleUserIcon, DoorOpen, LogOut, ShieldUser, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ComponentType } from "react";
 import logo from "@/assets/logo.png";
 
@@ -47,6 +48,7 @@ interface CurrentUser {
 export default function AppSidebar() {
     const location = useLocation();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 
     const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5143";
@@ -65,6 +67,19 @@ export default function AppSidebar() {
         };
         fetchCurrentUser();
     }, []);
+
+    const handleLogout = async () => {
+        try {
+            await fetch(`${API_BASE}/api/auth/logout`, {
+                method: 'POST',
+                credentials: 'include',
+            });
+        } catch (err) {
+            console.error('Logout failed:', err);
+        }
+        await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+        navigate({ to: "/login" });
+    };
 
     const visibleItems = items.filter(item => !item.adminOnly || currentUser?.role === "Admin");
 
@@ -130,10 +145,7 @@ export default function AppSidebar() {
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 className="px-2 py-3 flex items-center gap-2 w-full h-full cursor-pointer"
-                                                onSelect={() => {
-                                                    localStorage.removeItem('isAuthenticated');
-                                                    navigate({ to: "/login" });
-                                                }}
+                                                onSelect={handleLogout}
                                             >
                                                 <LogOut className="size-5! text-popover-foreground" />
                                                 <h3 className="text-base">Uitloggen</h3>

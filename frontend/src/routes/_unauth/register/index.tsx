@@ -54,16 +54,15 @@ function RouteComponent() {
                 email: value.email,
                 password: value.password,
             }, {
-                onSuccess: () => {
+                onSuccess: async () => {
                     toast.success("Account succesvol aangemaakt! U kunt nu inloggen.");
+                    // Invalidate queries before navigation
+                    await queryClient.invalidateQueries();
+                    await router.invalidate();
                     navigate({ to: '/login' });
                 },
                 onError: (error: any) => {
                     toast.error(error.message || "Registratie mislukt. Probeer het opnieuw.");
-                },
-                onSettled: async () => {
-                    await router.invalidate();
-                    await queryClient.invalidateQueries();
                 },
             });
         },

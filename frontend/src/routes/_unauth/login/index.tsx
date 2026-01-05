@@ -50,17 +50,16 @@ function RouteComponent() {
                 email: value.email,
                 password: value.password,
             }, {
-                onSuccess: () => {
-                    localStorage.setItem('isAuthenticated', 'true');
+                onSuccess: async () => {
                     toast.success("U bent succesvol ingelogd.");
-                    navigate({ to: search.redirectPath || '/' });
+                    // Invalidate auth queries first to ensure fresh data
+                    await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+                    await router.invalidate();
+                    // Navigate to events page after auth is refreshed
+                    navigate({ to: search.redirectPath || '/events' });
                 },
                 onError: () => {
                     toast.error("U kon niet worden ingelogd. Controleer de invoer en probeer het opnieuw.");
-                },
-                onSettled: async () => {
-                    await router.invalidate();
-                    await queryClient.invalidateQueries();
                 },
             });
         },
