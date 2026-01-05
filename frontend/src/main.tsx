@@ -6,6 +6,7 @@ import { routeTree } from './routeTree.gen';
 import './styles.css';
 import reportWebVitals from './reportWebVitals.ts';
 import { SidebarProvider } from './components/ui/sidebar.tsx';
+import { AuthProvider } from './lib/auth.tsx';
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext();
 const router = createRouter({
@@ -37,7 +38,9 @@ if (rootElement && !rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
-        <AppRoot />
+        <AuthProvider>
+          <AppRoot />
+        </AuthProvider>
       </TanStackQueryProvider.Provider>
     </StrictMode>,
   );

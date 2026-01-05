@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, CircleUserIcon, DoorOpen, LayoutDashboard, LogOut, ShieldUser, UserCheck, Users } from "lucide-react";
-import { ComponentType, useEffect, useState } from "react";
+import { CalendarDays, CircleUserIcon, DoorOpen, LogOut, ShieldUser, UserCheck, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import type { ComponentType } from "react";
 import logo from "@/assets/logo.png";
 
 import {
@@ -31,7 +32,6 @@ type MenuItem = {
 };
 
 const items: Array<MenuItem> = [
-    { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
     { title: "Evenementen", url: "/events", icon: CalendarDays },
     { title: "Kantoor aanwezigheid", url: "/office-attendance", icon: UserCheck },
     { title: "Kamers", url: "/rooms", icon: DoorOpen },

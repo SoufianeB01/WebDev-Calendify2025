@@ -1,39 +1,40 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
-import z from "zod";
 import type { FormEvent } from "react";
 
 import { useAppForm } from "@/hooks/use-app-form";
 import { Button } from "@/components/ui/button";
-import { loginSchema } from "@/types/Auth";
+import { registerSchema } from "@/types/Auth";
 
-export const Route = createFileRoute("/_unauth/login/")({
+export const Route = createFileRoute("/_unauth/register/")({
     component: RouteComponent,
-    validateSearch: z.object({
-        redirectPath: z.string().optional(),
-    }),
 });
 
 function RouteComponent() {
     const navigate = Route.useNavigate();
-    const search = Route.useSearch();
     const router = useRouter();
     const queryClient = useQueryClient();
 
-    const loginMutation = useMutation({
-        mutationFn: async (data: { email: string; password: string }) => {
+    const registerMutation = useMutation({
+        mutationFn: async (data: { name: string; email: string; password: string }) => {
             const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
-            const response = await fetch(`${API_BASE}/api/auth/login`, {
+            const response = await fetch(`${API_BASE}/api/auth/register`, {
                 method: 'POST',
                 mode: 'cors',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: data.email, password: data.password }),
+                body: JSON.stringify({
+                    name: data.name,
+                    email: data.email,
+                    password: data.password,
+                    role: "Employee"
+                }),
             });
 
             if (!response.ok) {
-                throw new Error('Request failed');
+                const error = await response.json();
+                throw new Error(error.message || 'Registratie mislukt');
             }
 
             return response.json();
@@ -42,21 +43,23 @@ function RouteComponent() {
 
     const form = useAppForm({
         defaultValues: {
+            name: "",
             email: "",
             password: "",
+            confirmPassword: "",
         },
         onSubmit: async ({ value }) => {
-            await loginMutation.mutateAsync({
+            await registerMutation.mutateAsync({
+                name: value.name,
                 email: value.email,
                 password: value.password,
             }, {
                 onSuccess: () => {
-                    localStorage.setItem('isAuthenticated', 'true');
-                    toast.success("U bent succesvol ingelogd.");
-                    navigate({ to: search.redirectPath || '/' });
+                    toast.success("Account succesvol aangemaakt! U kunt nu inloggen.");
+                    navigate({ to: '/login' });
                 },
-                onError: () => {
-                    toast.error("U kon niet worden ingelogd. Controleer de invoer en probeer het opnieuw.");
+                onError: (error: any) => {
+                    toast.error(error.message || "Registratie mislukt. Probeer het opnieuw.");
                 },
                 onSettled: async () => {
                     await router.invalidate();
@@ -65,7 +68,7 @@ function RouteComponent() {
             });
         },
         validators: {
-            onSubmit: loginSchema,
+            onSubmit: registerSchema,
         },
     });
 
@@ -76,16 +79,26 @@ function RouteComponent() {
 
     return (
         <div className="bg-card text-card-foreground flex flex-col gap-4 w-full sm:max-w-lg rounded-lg shadow-lg border-0 p-6">
-            <h1 className="text-4xl">Inloggen</h1>
-            <h3 className="block text-base">Welkom terug! Voer uw gegevens in.</h3>
+            <h1 className="text-4xl">Registreren</h1>
+            <h3 className="block text-base">Maak een nieuw account aan.</h3>
             <form.AppForm>
                 <form
-                    id="login-form"
+                    id="register-form"
                     onSubmit={handleSubmit}
                     className="flex flex-col gap-6 h-full text-muted-foreground"
                     noValidate
                 >
                     <div className="flex flex-col gap-4 flex-1 min-h-0 text-sm text-muted-foreground">
+                        <form.AppField
+                            name="name"
+                            children={(field) =>
+                                <field.TextField
+                                    label="Naam"
+                                    type="text"
+                                    placeholder="Voer uw volledige naam in &hellip;"
+                                />
+                            }
+                        />
                         <form.AppField
                             name="email"
                             children={(field) =>
@@ -106,6 +119,16 @@ function RouteComponent() {
                                 />
                             }
                         />
+                        <form.AppField
+                            name="confirmPassword"
+                            children={(field) =>
+                                <field.TextField
+                                    label="Bevestig wachtwoord"
+                                    type="password"
+                                    placeholder="Voer uw wachtwoord opnieuw in &hellip;"
+                                />
+                            }
+                        />
                     </div>
                     <div className="flex gap-2 mt-auto">
                         <div className="flex flex-col h-full w-full">
@@ -115,24 +138,18 @@ function RouteComponent() {
                                     children={(canSubmit) => (
                                         <Button
                                             type="submit"
-                                            disabled={!canSubmit}
+                                            disabled={!canSubmit || registerMutation.isPending}
                                             className="w-full flex-1 uppercase p-3"
-                                            children="Inloggen"
+                                            children={registerMutation.isPending ? "Registreren..." : "Registreren"}
                                         />
                                     )}
                                 />
                                 <Button
                                     type="button"
-                                    className="w-full flex-1 uppercase p-3"
-                                    onClick={() => navigate({ to: "/password-reset" })}
-                                    children="Wachtwoord resetten"
-                                />
-                                <Button
-                                    type="button"
                                     variant="outline"
                                     className="w-full flex-1 uppercase p-3"
-                                    onClick={() => navigate({ to: "/register" })}
-                                    children="Registreren"
+                                    onClick={() => navigate({ to: "/login" })}
+                                    children="Terug naar inloggen"
                                 />
                             </div>
                         </div>

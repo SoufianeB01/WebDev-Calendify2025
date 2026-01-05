@@ -63,7 +63,7 @@ export function TextField({
 
   return (
     <div>
-      <Label htmlFor={label} className="mb-2 text-xl font-bold">
+      <Label htmlFor={label} className="mb-2 text-sm text-white font-bold">
         {label}
       </Label>
       <Input
@@ -72,7 +72,6 @@ export function TextField({
         placeholder={placeholder}
         onBlur={field.handleBlur}
         onChange={(e) => field.handleChange(e.target.value)}
-        className="w-full h-12"
       />
       {field.state.meta.isTouched && <ErrorMessages errors={errors} />}
     </div>

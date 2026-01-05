@@ -12,8 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnauthRouteRouteImport } from './routes/_unauth/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UnauthRegisterIndexRouteImport } from './routes/_unauth/register/index'
 import { Route as UnauthPasswordResetIndexRouteImport } from './routes/_unauth/password-reset/index'
-import { Route as UnauthPasswordForgotIndexRouteImport } from './routes/_unauth/password-forgot/index'
 import { Route as UnauthLoginIndexRouteImport } from './routes/_unauth/login/index'
 import { Route as AuthUsersIndexRouteImport } from './routes/_auth/users/index'
 import { Route as AuthRoomsIndexRouteImport } from './routes/_auth/rooms/index'
@@ -37,16 +37,15 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UnauthRegisterIndexRoute = UnauthRegisterIndexRouteImport.update({
+  id: '/register/',
+  path: '/register/',
+  getParentRoute: () => UnauthRouteRoute,
+} as any)
 const UnauthPasswordResetIndexRoute =
   UnauthPasswordResetIndexRouteImport.update({
     id: '/password-reset/',
     path: '/password-reset/',
-    getParentRoute: () => UnauthRouteRoute,
-  } as any)
-const UnauthPasswordForgotIndexRoute =
-  UnauthPasswordForgotIndexRouteImport.update({
-    id: '/password-forgot/',
-    path: '/password-forgot/',
     getParentRoute: () => UnauthRouteRoute,
   } as any)
 const UnauthLoginIndexRoute = UnauthLoginIndexRouteImport.update({
@@ -106,8 +105,8 @@ export interface FileRoutesByFullPath {
   '/rooms': typeof AuthRoomsIndexRoute
   '/users': typeof AuthUsersIndexRoute
   '/login': typeof UnauthLoginIndexRoute
-  '/password-forgot': typeof UnauthPasswordForgotIndexRoute
   '/password-reset': typeof UnauthPasswordResetIndexRoute
+  '/register': typeof UnauthRegisterIndexRoute
   '/events/$eventId': typeof AuthEventsEventIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -120,8 +119,8 @@ export interface FileRoutesByTo {
   '/rooms': typeof AuthRoomsIndexRoute
   '/users': typeof AuthUsersIndexRoute
   '/login': typeof UnauthLoginIndexRoute
-  '/password-forgot': typeof UnauthPasswordForgotIndexRoute
   '/password-reset': typeof UnauthPasswordResetIndexRoute
+  '/register': typeof UnauthRegisterIndexRoute
   '/events/$eventId': typeof AuthEventsEventIdIndexRoute
 }
 export interface FileRoutesById {
@@ -137,8 +136,8 @@ export interface FileRoutesById {
   '/_auth/rooms/': typeof AuthRoomsIndexRoute
   '/_auth/users/': typeof AuthUsersIndexRoute
   '/_unauth/login/': typeof UnauthLoginIndexRoute
-  '/_unauth/password-forgot/': typeof UnauthPasswordForgotIndexRoute
   '/_unauth/password-reset/': typeof UnauthPasswordResetIndexRoute
+  '/_unauth/register/': typeof UnauthRegisterIndexRoute
   '/_auth/events/$eventId/': typeof AuthEventsEventIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -153,8 +152,8 @@ export interface FileRouteTypes {
     | '/rooms'
     | '/users'
     | '/login'
-    | '/password-forgot'
     | '/password-reset'
+    | '/register'
     | '/events/$eventId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -167,8 +166,8 @@ export interface FileRouteTypes {
     | '/rooms'
     | '/users'
     | '/login'
-    | '/password-forgot'
     | '/password-reset'
+    | '/register'
     | '/events/$eventId'
   id:
     | '__root__'
@@ -183,8 +182,8 @@ export interface FileRouteTypes {
     | '/_auth/rooms/'
     | '/_auth/users/'
     | '/_unauth/login/'
-    | '/_unauth/password-forgot/'
     | '/_unauth/password-reset/'
+    | '/_unauth/register/'
     | '/_auth/events/$eventId/'
   fileRoutesById: FileRoutesById
 }
@@ -217,18 +216,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_unauth/register/': {
+      id: '/_unauth/register/'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof UnauthRegisterIndexRouteImport
+      parentRoute: typeof UnauthRouteRoute
+    }
     '/_unauth/password-reset/': {
       id: '/_unauth/password-reset/'
       path: '/password-reset'
       fullPath: '/password-reset'
       preLoaderRoute: typeof UnauthPasswordResetIndexRouteImport
-      parentRoute: typeof UnauthRouteRoute
-    }
-    '/_unauth/password-forgot/': {
-      id: '/_unauth/password-forgot/'
-      path: '/password-forgot'
-      fullPath: '/password-forgot'
-      preLoaderRoute: typeof UnauthPasswordForgotIndexRouteImport
       parentRoute: typeof UnauthRouteRoute
     }
     '/_unauth/login/': {
@@ -325,14 +324,14 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 
 interface UnauthRouteRouteChildren {
   UnauthLoginIndexRoute: typeof UnauthLoginIndexRoute
-  UnauthPasswordForgotIndexRoute: typeof UnauthPasswordForgotIndexRoute
   UnauthPasswordResetIndexRoute: typeof UnauthPasswordResetIndexRoute
+  UnauthRegisterIndexRoute: typeof UnauthRegisterIndexRoute
 }
 
 const UnauthRouteRouteChildren: UnauthRouteRouteChildren = {
   UnauthLoginIndexRoute: UnauthLoginIndexRoute,
-  UnauthPasswordForgotIndexRoute: UnauthPasswordForgotIndexRoute,
   UnauthPasswordResetIndexRoute: UnauthPasswordResetIndexRoute,
+  UnauthRegisterIndexRoute: UnauthRegisterIndexRoute,
 }
 
 const UnauthRouteRouteWithChildren = UnauthRouteRoute._addFileChildren(
