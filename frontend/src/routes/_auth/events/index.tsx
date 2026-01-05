@@ -52,7 +52,7 @@ function RouteComponent() {
   });
 
   // Fetch reviews for all events
-  const { data: allReviews = {} } = useQuery<Record<string, Array<any>>>({
+  const { data: allReviews } = useQuery<Record<string, Array<any>>>({
     queryKey: ['all-reviews'],
     queryFn: async () => {
       const reviewsMap: Record<string, Array<any>> = {};
@@ -75,8 +75,8 @@ function RouteComponent() {
 
   // Calculate average rating
   const calculateAverageRating = (eventId: string): number | null => {
-    const reviews = allReviews[eventId];
-    if (reviews.length === 0) return null;
+    const reviews = allReviews?.[eventId];
+    if (!reviews || reviews.length === 0) return null;
     const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
     return sum / reviews.length;
   };
@@ -254,7 +254,7 @@ function RouteComponent() {
     },
     onSubmit: ({ value }) => {
       if (!selectedEvent) return;
-      const eventReviews = allReviews[selectedEvent.eventId];
+      const eventReviews = allReviews?.[selectedEvent.eventId] ?? [];
       const userReview = eventReviews.find(r => r.userId === user?.userId || r.userId === user?.UserId);
       submitReviewMutation.mutate({
         eventId: selectedEvent.eventId,
@@ -305,7 +305,7 @@ function RouteComponent() {
             <div className="flex items-center gap-2 text-sm">
               <StarIcon className="h-4 w-4 text-yellow-600 fill-yellow-600" />
               <span>{avgRating.toFixed(1)} / 5.0</span>
-              <span className="text-muted-foreground">({allReviews[event.eventId].length})</span>
+              <span className="text-muted-foreground">({allReviews?.[event.eventId]?.length ?? 0})</span>
             </div>
           )}
         </CardContent>
@@ -333,7 +333,7 @@ function RouteComponent() {
           {/* Rating button for ALL users on any event */}
           <Button size="sm" variant="outline" onClick={() => {
             setSelectedEvent(event);
-            const eventReviews = allReviews[event.eventId];
+            const eventReviews = allReviews?.[event.eventId] ?? [];
             const userReview = eventReviews.find(r => r.userId === user?.userId || r.userId === user?.UserId);
             if (userReview) {
               reviewForm.setFieldValue('rating', userReview.rating);
@@ -552,7 +552,7 @@ function RouteComponent() {
             >
               <DialogHeader>
                 <DialogTitle>
-                  {selectedEvent && allReviews[selectedEvent.eventId].find(r => r.userId === user?.userId || r.userId === user?.UserId)
+                  {selectedEvent && allReviews?.[selectedEvent.eventId]?.find(r => r.userId === user?.userId || r.userId === user?.UserId)
                     ? 'Beoordeling bewerken'
                     : 'Evenement beoordelen'}
                 </DialogTitle>
@@ -611,7 +611,7 @@ function RouteComponent() {
               </div>
               <DialogFooter>
                 <Button type="submit">
-                  {selectedEvent && allReviews[selectedEvent.eventId].find(r => r.userId === user?.userId || r.userId === user?.UserId)
+                  {selectedEvent && allReviews?.[selectedEvent.eventId]?.find(r => r.userId === user?.userId || r.userId === user?.UserId)
                     ? 'Beoordeling bijwerken'
                     : 'Beoordeling indienen'}
                 </Button>
