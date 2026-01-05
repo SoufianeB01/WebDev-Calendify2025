@@ -51,6 +51,32 @@ function RouteComponent() {
     }
   });
 
+  // Fetch user's event attendances
+  const { data: userAttendances = [] } = useQuery<Array<{ eventId: string; userId: string }>>({
+    queryKey: ['user-attendances'],
+    queryFn: async () => {
+      const attendances: Array<{ eventId: string; userId: string }> = [];
+      for (const event of events) {
+        try {
+          const res = await fetch(`${API_BASE}/api/Events/${event.eventId}/attendees`, { credentials: 'include' });
+          if (res.ok) {
+            const eventAttendees = await res.json();
+            const isRegistered = Array.isArray(eventAttendees) 
+              ? eventAttendees.some((a: any) => a.userId === (user?.userId || user?.UserId))
+              : false;
+            if (isRegistered) {
+              attendances.push({ eventId: event.eventId, userId: user?.userId || user?.UserId || '' });
+            }
+          }
+        } catch (err) {
+          console.error(`Failed to check attendance for event ${event.eventId}`, err);
+        }
+      }
+      return attendances;
+    },
+    enabled: events.length > 0 && !!user,
+  });
+
   // Fetch reviews for all events
   const { data: allReviews } = useQuery<Record<string, Array<any>>>({
     queryKey: ['all-reviews'],
@@ -159,6 +185,7 @@ function RouteComponent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['user-attendances'] });
       toast.success('Succesvol ingeschreven voor evenement');
     },
     onError: (error) => {
@@ -178,6 +205,7 @@ function RouteComponent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['user-attendances'] });
       toast.success('Uitgeschreven van evenement');
     },
     onError: (error) => {
@@ -276,13 +304,14 @@ function RouteComponent() {
   // Event Card Component
   const EventCard = ({ event, isPast }: { event: Event; isPast: boolean }) => {
     const avgRating = calculateAverageRating(event.eventId);
+    const isRegistered = userAttendances.some(a => a.eventId === event.eventId);
 
     return (
       <Card className="hover:shadow-lg transition-shadow">
         <CardHeader>
           <div className="flex justify-between items-start">
             <CardTitle>{event.title}</CardTitle>
-            {event.isRegistered && (
+            {isRegistered && (
               <Badge variant="default">Ingeschreven</Badge>
             )}
           </div>
@@ -318,14 +347,14 @@ function RouteComponent() {
             Details
           </Button>
 
-          {!isPast && !event.isRegistered && (
+          {!isPast && !isRegistered && (
             <Button size="sm" onClick={() => registerEventMutation.mutate(event.eventId)}>
               Inschrijven
             </Button>
           )}
 
-          {!isPast && event.isRegistered && (
-            <Button size="sm" variant="destructive" onClick={() => unregisterEventMutation.mutate(event.eventId)}>
+          {!isPast && isRegistered && (
+            <Button size="sm" className="text-destructive" onClick={() => unregisterEventMutation.mutate(event.eventId)}>
               Uitschrijven
             </Button>
           )}

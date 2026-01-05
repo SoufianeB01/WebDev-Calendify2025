@@ -49,6 +49,20 @@ function RouteComponent() {
         },
     });
 
+    // Fetch event attendees
+    const { data: attendees = [] } = useQuery<Array<{ userId: string; name: string; email: string }>>({
+        queryKey: ['event-attendees', eventId],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/api/Events/${eventId}/attendees`, { credentials: 'include' });
+            if (!res.ok) return [];
+            const data = await res.json();
+            return Array.isArray(data) ? data : data.attendees || [];
+        },
+    });
+
+    // Check if current user is registered
+    const isUserRegistered = attendees.some(a => a.userId === (user?.userId || user?.UserId || ''));
+
     // Find user's existing review
     const userReview = reviews.find(r => r.userId === user?.userId || r.userId === user?.UserId);
 
@@ -65,6 +79,7 @@ function RouteComponent() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['event', eventId] });
             queryClient.invalidateQueries({ queryKey: ['events'] });
+            queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
             toast.success('Succesvol ingeschreven voor evenement');
         },
         onError: (error) => {
@@ -86,6 +101,7 @@ function RouteComponent() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['event', eventId] });
             queryClient.invalidateQueries({ queryKey: ['events'] });
+            queryClient.invalidateQueries({ queryKey: ['event-attendees', eventId] });
             toast.success('Uitgeschreven van evenement');
         },
         onError: (error) => {
@@ -175,7 +191,7 @@ function RouteComponent() {
                     <div className="flex justify-between items-start">
                         <div className="space-y-2 flex-1">
                             <CardTitle className="text-3xl">{event.title}</CardTitle>
-                            {event.isRegistered && (
+                            {isUserRegistered && (
                                 <Badge variant="default">Ingeschreven</Badge>
                             )}
                         </div>
@@ -210,15 +226,15 @@ function RouteComponent() {
                     </div>
 
                     <div className="flex gap-3 flex-wrap">
-                        {!isPastEvent && !event.isRegistered && (
+                        {!isPastEvent && !isUserRegistered && (
                             <Button onClick={() => registerMutation.mutate()}>
                                 <UsersIcon className="h-4 w-4 mr-2" />
                                 Inschrijven
                             </Button>
                         )}
 
-                        {!isPastEvent && event.isRegistered && (
-                            <Button variant="destructive" onClick={() => unregisterMutation.mutate()}>
+                        {!isPastEvent && isUserRegistered && (
+                            <Button className="text-destructive" onClick={() => unregisterMutation.mutate()}>
                                 <XCircleIcon className="h-4 w-4 mr-2" />
                                 Uitschrijven
                             </Button>
@@ -314,6 +330,23 @@ function RouteComponent() {
                             </reviewForm.AppForm>
                         </DialogContent>
                     </Dialog>
+
+                    {/* Attendees Section */}
+                    {attendees.length > 0 && (
+                        <div className="mt-6 border-t pt-6">
+                            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                                <UsersIcon className="h-5 w-5" />
+                                Deelnemers ({attendees.length})
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                                {attendees.map((attendee, index) => (
+                                    <Badge key={index} variant="secondary">
+                                        {attendee.name}
+                                    </Badge>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Reviews Section */}
                     {reviews.length > 0 && (

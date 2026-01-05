@@ -123,7 +123,7 @@ namespace CalendifyWebAppAPI.Controllers
 
             var attendees = await _participationService.GetAttendeesAsync(eventId);
             if (attendees == null || attendees.Count == 0)
-                return Ok(new { message = "No attendees for this event", attendees = new List<Guid>() });
+                return Ok(new { message = "No attendees for this event", attendees = new List<object>() });
             return Ok(attendees);
         }
 

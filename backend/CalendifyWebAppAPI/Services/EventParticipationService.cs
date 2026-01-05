@@ -35,13 +35,23 @@ namespace CalendifyWebAppAPI.Services
             return epNew;
         }
 
-        public async Task<List<Guid>> GetAttendeesAsync(Guid eventId)
+        public async Task<List<object>> GetAttendeesAsync(Guid eventId)
         {
-            return await _context.EventParticipations
+            var attendees = await _context.EventParticipations
                 .Where(ep => ep.EventId == eventId)
-                .Select(ep => ep.UserId)
+                .Join(
+                    _context.Employees,
+                    ep => ep.UserId,
+                    e => e.UserId,
+                    (ep, e) => new
+                    {
+                        userId = ep.UserId,
+                        name = e.Name,
+                        email = e.Email
+                    })
                 .Distinct()
                 .ToListAsync();
+            return attendees.Cast<object>().ToList();
         }
 
         public async Task<bool> CancelAttendanceAsync(Guid userId, Guid eventId)
