@@ -52,11 +52,11 @@ function RouteComponent() {
             }, {
                 onSuccess: async () => {
                     toast.success("U bent succesvol ingelogd.");
-                    // Invalidate auth queries first to ensure fresh data
-                    await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+                    // Clear all queries and router cache before navigation
+                    queryClient.clear();
                     await router.invalidate();
-                    // Navigate to events page after auth is refreshed
-                    navigate({ to: search.redirectPath || '/events' });
+                    // Navigate to events page after cache is cleared
+                    await navigate({ to: search.redirectPath || '/events' });
                 },
                 onError: () => {
                     toast.error("U kon niet worden ingelogd. Controleer de invoer en probeer het opnieuw.");
