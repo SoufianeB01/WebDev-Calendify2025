@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import type { FormEvent } from 'react';
 import { useAppForm } from '@/hooks/use-app-form';
@@ -14,35 +15,42 @@ function RouteComponent() {
   const navigate = useNavigate();
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5143';
 
+  const resetPasswordMutation = useMutation({
+    mutationFn: async (data: { email: string; password: string }) => {
+      const response = await fetch(`${API_BASE}/api/auth/reset-password`, {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to reset password');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success('Wachtwoord succesvol gewijzigd');
+      navigate({ to: '/login' });
+    },
+    onError: (error: Error) => {
+      console.error(error);
+      toast.error(error.message || 'Gebruiker niet gevonden of fout bij resetten');
+    },
+  });
+
   const form = useAppForm({
     defaultValues: {
       email: '',
       password: '',
       confirmPassword: '',
     },
-    onSubmit: async ({ value }) => {
-      try {
-        const response = await fetch(`${API_BASE}/api/auth/reset-password`, {
-          method: 'POST',
-          mode: 'cors',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: value.email,
-            password: value.password
-          }),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || 'Failed to reset password');
-        }
-
-        toast.success('Wachtwoord succesvol gewijzigd');
-        navigate({ to: '/login' });
-      } catch (error: any) {
-        toast.error(error.message || 'Gebruiker niet gevonden of fout bij resetten');
-      }
+    onSubmit: ({ value }) => {
+      resetPasswordMutation.mutate({
+        email: value.email,
+        password: value.password
+      });
     },
     validators: {
       onSubmit: resetPasswordSchema

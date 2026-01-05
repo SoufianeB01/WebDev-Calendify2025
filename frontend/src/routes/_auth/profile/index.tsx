@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from "react";
 import { toast } from "sonner";
 import type { UserProfile } from "@/types/UserProfile";
 import { changePasswordSchema, updateProfileSchema } from "@/types/UserProfile";
@@ -14,66 +15,77 @@ export const Route = createFileRoute("/_auth/profile/")({
 });
 
 export function RouteComponent() {
-  const [userData, setUserData] = useState<UserProfile | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5143";
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: "include" });
-        if (!res.ok) throw new Error("Kon profiel niet ophalen");
-        const data: UserProfile = await res.json();
-        setUserData(data);
-      } catch (err) {
-        console.error(err);
-        toast.error("Kon profiel niet ophalen");
-      }
-    };
-    fetchUser();
-  }, []);
+  const { data: userData = null } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: "include" });
+      if (!res.ok) throw new Error("Kon profiel niet ophalen");
+      return res.json() as Promise<UserProfile>;
+    },
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: { firstName: string; lastName: string; email: string }) => {
+      const res = await fetch(`${API_BASE}/api/user/profile`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Fout bij bijwerken profiel");
+      return res.json() as Promise<UserProfile>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setIsEditDialogOpen(false);
+      toast.success("Profiel succesvol bijgewerkt");
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error("Fout bij bijwerken profiel");
+    },
+  });
+
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+      const res = await fetch(`${API_BASE}/api/user/password`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Fout bij wijzigen wachtwoord");
+      return res.json();
+    },
+    onSuccess: () => {
+      passwordForm.reset();
+      toast.success("Wachtwoord succesvol gewijzigd");
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error("Fout bij wijzigen wachtwoord");
+    },
+  });
 
   const profileForm = useAppForm({
     defaultValues: { firstName: "", lastName: "", email: "" },
-    onSubmit: async ({ value }) => {
-      if (!userData) return;
-      try {
-        const res = await fetch(`${API_BASE}/api/user/profile`, {
-          method: "PUT",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(value),
-        });
-        if (!res.ok) throw new Error("Fout bij bijwerken profiel");
-        const updated: UserProfile = await res.json();
-        setUserData(updated);
-        setIsEditDialogOpen(false);
-        toast.success("Profiel succesvol bijgewerkt");
-      } catch (err) {
-        console.error(err);
-        toast.error("Fout bij bijwerken profiel");
-      }
+    onSubmit: ({ value }) => {
+      updateProfileMutation.mutate(value);
     },
     validators: { onSubmit: updateProfileSchema },
   });
 
   const passwordForm = useAppForm({
     defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
-    onSubmit: async ({ value }) => {
-      try {
-        const res = await fetch(`${API_BASE}/api/user/password`, {
-          method: "PUT",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ currentPassword: value.currentPassword, newPassword: value.newPassword }),
-        });
-        if (!res.ok) throw new Error("Fout bij wijzigen wachtwoord");
-        passwordForm.reset();
-        toast.success("Wachtwoord succesvol gewijzigd");
-      } catch (err) {
-        console.error(err);
-        toast.error("Fout bij wijzigen wachtwoord");
-      }
+    onSubmit: ({ value }) => {
+      changePasswordMutation.mutate({
+        currentPassword: value.currentPassword,
+        newPassword: value.newPassword
+      });
     },
     validators: { onSubmit: changePasswordSchema },
   });
