@@ -8,6 +8,8 @@ export type CalendarEvent = {
     end?: Date;
     allDay?: boolean;
     color?: EventColor;
+    averageRating?: number;
+    reviewCount?: number;
 };
 
 export type EventColor

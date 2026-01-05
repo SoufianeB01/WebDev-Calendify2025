@@ -1,5 +1,5 @@
 import { format, isBefore } from 'date-fns';
-import { Calendar as Clndr, Trash2 } from 'lucide-react';
+import { Calendar as Clndr, StarIcon, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '../ui/button';
 import { Calendar } from '../ui/calendar';
@@ -248,6 +248,17 @@ export function EventDialog({
                     </div>
                 )}
                 <div className="grid gap-4 py-4">
+                    {event?.averageRating !== undefined && event.averageRating > 0 && (
+                        <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                            <StarIcon className="h-5 w-5 text-yellow-600 fill-yellow-600" />
+                            <div>
+                                <span className="font-semibold">{event.averageRating.toFixed(1)} / 5.0</span>
+                                <span className="text-sm text-muted-foreground ml-2">
+                                    ({event.reviewCount} {event.reviewCount === 1 ? 'review' : 'reviews'})
+                                </span>
+                            </div>
+                        </div>
+                    )}
                     <div className="*:not-first:mt-1.5">
                         <Label htmlFor="title">Title</Label>
                         <Input

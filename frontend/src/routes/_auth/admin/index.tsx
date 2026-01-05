@@ -8,6 +8,7 @@ import {
   PencilIcon,
   PlusIcon,
   ShieldIcon,
+  StarIcon,
   TrashIcon,
   UserIcon,
 } from "lucide-react";
@@ -63,10 +64,32 @@ function RouteComponent() {
   const { data: events = [] } = useQuery<Array<Event>>({
     queryKey: ['events'],
     queryFn: async () => {
-      const res = await fetch(`${API_BASE}/api/events`, { credentials: "include" });
+      const res = await fetch(`${API_BASE}/api/Events`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch events");
       return res.json();
     },
+  });
+
+  // Fetch reviews for all events
+  const { data: allReviews = {} } = useQuery<Record<string, Array<any>>>({
+    queryKey: ['all-reviews'],
+    queryFn: async () => {
+      const reviewsMap: Record<string, Array<any>> = {};
+      await Promise.all(
+        events.map(async (event) => {
+          try {
+            const res = await fetch(`${API_BASE}/api/Events/${event.eventId}/reviews`, { credentials: 'include' });
+            if (res.ok) {
+              reviewsMap[event.eventId] = await res.json();
+            }
+          } catch (err) {
+            console.error(`Failed to fetch reviews for event ${event.eventId}`, err);
+          }
+        })
+      );
+      return reviewsMap;
+    },
+    enabled: events.length > 0,
   });
 
   // Convert events to calendar format
@@ -74,6 +97,10 @@ function RouteComponent() {
     const dateOnly = event.eventDate.split('T')[0];
     const start = new Date(dateOnly + 'T' + event.startTime);
     const end = new Date(dateOnly + 'T' + event.endTime);
+    const reviews = allReviews[event.eventId] || [];
+    const averageRating = reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      : undefined;
     return {
       id: event.eventId.toString(),
       title: event.title,
@@ -82,6 +109,8 @@ function RouteComponent() {
       end,
       allDay: false,
       color: 'sky' as const,
+      averageRating,
+      reviewCount: reviews.length,
     };
   });
 
@@ -452,10 +481,24 @@ function RouteComponent() {
                         <span>{selectedEvent.startTime} - {selectedEvent.endTime}</span>
                       </div>
 
-                      <div className="flex items-center gap-2 text-sm col-span-2">
+                      <div className="flex items-center gap-2 text-sm">
                         <MapPinIcon className="h-4 w-4 text-muted-foreground" />
                         <span>{selectedEvent.location}</span>
                       </div>
+
+                      {(() => {
+                        const reviews = allReviews[selectedEvent.eventId] || [];
+                        const averageRating = reviews.length > 0
+                          ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                          : null;
+                        return averageRating && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <StarIcon className="h-4 w-4 text-yellow-600 fill-yellow-600" />
+                            <span>{averageRating.toFixed(1)} / 5.0</span>
+                            <span className="text-muted-foreground">({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})</span>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
 
